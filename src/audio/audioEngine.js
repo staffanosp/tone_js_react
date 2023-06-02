@@ -14,7 +14,7 @@ function createAudioEngine(numOscillators = 5) {
     oscillatorNode.volume.value = -24;
     oscillatorNodes.push(oscillatorNode);
 
-    const oscillatorGainNode = new Tone.Gain(1);
+    const oscillatorGainNode = new Tone.Gain(0);
     oscillatorGainNodes.push(oscillatorGainNode);
   }
 
@@ -46,10 +46,13 @@ function createAudioEngine(numOscillators = 5) {
       console.log("setOscillatorGainsFromNormalizedValue");
 
       this.nodes.oscillatorGainNodes.forEach((gainNode, i) => {
-        if (i === 0) return;
+        //the first oscGain is always 1
+        let gain = 1;
 
-        let unnormalized = 1 + v * (this.numOscillators - 1);
-        const gain = clamp(unnormalized - i);
+        if (i > 0) {
+          let unnormalized = 1 + v * (this.numOscillators - 1);
+          gain = clamp(unnormalized - i);
+        }
 
         gainNode.gain.rampTo(gain, rampTime);
       });

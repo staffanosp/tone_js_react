@@ -18,7 +18,12 @@ function AudioEngine({ modX, modY }) {
   function handleClick() {
     if (!audioEngineRef.current) {
       console.log("click");
+
+      //create engine + init
       audioEngineRef.current = createAudioEngine(getMinVoices());
+      audioEngineRef.current.setChord(getChord(0), 0);
+      audioEngineRef.current.setOscillatorGainsFromNormalizedValue(0, 0.5);
+
       Tone.start();
       setToneIsActive(true);
     } else {
