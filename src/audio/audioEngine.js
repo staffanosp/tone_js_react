@@ -55,12 +55,18 @@ function createAudioEngine(numOscillators = 5) {
     },
 
     setChord(notes, rampTime = 0.1) {
+      const rndDetuneRange = 10;
+
       console.log("setChord");
 
       for (const [i, note] of notes.entries()) {
         if (i > this.numOscillators - 1) break;
 
         this.nodes.oscillatorNodes[i].frequency.rampTo(note, rampTime);
+        this.nodes.oscillatorNodes[i].detune.rampTo(
+          Math.random() * rndDetuneRange,
+          rampTime
+        );
       }
     },
 
