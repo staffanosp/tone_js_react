@@ -1,46 +1,67 @@
 import { useEffect, useState } from "react";
 import AudioEngine from "./components/AudioEngine";
+import { changeChordSet } from "./audio/chords";
 
 import "./App.css";
 
 function App() {
-  const [audioModX, setAudioModX] = useState(0);
-  const [audioModY, setAudioModY] = useState(0);
+	const [audioModX, setAudioModX] = useState(0);
+	const [audioModY, setAudioModY] = useState(0);
 
-  const [isTrackingMouse, setIsTrackingMouse] = useState(false);
+	const [isTrackingMouse, setIsTrackingMouse] = useState(false);
 
-  //Track mouse
-  useEffect(() => {
-    const _listener = (e) => {
-      setAudioModX(e.clientX / window.innerWidth);
-      setAudioModY(1 - e.clientY / window.innerHeight);
-    };
+	const [chordSetIndex, setChordSetIndex] = useState(0);
 
-    if (isTrackingMouse) {
-      addEventListener("mousemove", _listener);
-    } else {
-      removeEventListener("mousemove", _listener);
-    }
+	//Track mouse
+	useEffect(() => {
+		const _listener = (e) => {
+			setAudioModX(e.clientX / window.innerWidth);
+			setAudioModY(1 - e.clientY / window.innerHeight);
+		};
 
-    return () => {
-      removeEventListener("mousemove", _listener);
-    }; //cleanup
-  }, [isTrackingMouse]);
+		if (isTrackingMouse) {
+			addEventListener("mousemove", _listener);
+		} else {
+			removeEventListener("mousemove", _listener);
+		}
 
-  return (
-    <>
-      <AudioEngine modX={audioModX} modY={audioModY} />
-      <div>
-        <button
-          onClick={() => {
-            setIsTrackingMouse((old) => !old);
-          }}
-        >
-          {isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
-        </button>
-      </div>
-    </>
-  );
+		return () => {
+			removeEventListener("mousemove", _listener);
+		}; //cleanup
+	}, [isTrackingMouse]);
+
+	// Change chord set when chordSetIndex is updated
+	useEffect(() => {
+		changeChordSet(chordSetIndex);
+	}, [chordSetIndex]);
+
+	return (
+		<>
+			<AudioEngine modX={audioModX} modY={audioModY} />
+			<div>
+				<button
+					onClick={() => {
+						setIsTrackingMouse((old) => !old);
+					}}
+				>
+					{isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
+				</button>
+				<div className="chordSetPickerContainer">
+					<button
+						onClick={() => setChordSetIndex((prevIndex) => prevIndex - 1)}
+					>
+						-
+					</button>
+					<div>Chord Set: {chordSetIndex}</div>
+					<button
+						onClick={() => setChordSetIndex((prevIndex) => prevIndex + 1)}
+					>
+						+
+					</button>
+				</div>
+			</div>
+		</>
+	);
 }
 
 export default App;
