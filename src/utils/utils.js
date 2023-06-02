@@ -1,6 +1,6 @@
 const lerp = (x, v0, v1) => v0 + x * (v1 - v0);
 
-const clamp = (v, min, max) => Math.max(Math.min(v, max), min);
+const clamp = (v, min = 0, max = 1) => Math.max(Math.min(v, max), min);
 
 const wrap = (v, min, max) =>
   min + ((((v - min) % (max - min)) + (max - min)) % (max - min));

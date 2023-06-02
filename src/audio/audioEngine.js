@@ -1,4 +1,5 @@
 import * as Tone from "tone";
+import { clamp } from "../utils/utils";
 
 function createAudioEngine(numOscillators = 5) {
   console.log("—— AUDIO ENGINE: CREATE ——");
@@ -40,6 +41,19 @@ function createAudioEngine(numOscillators = 5) {
 
     numOscillators,
 
+    setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {
+      console.log("setOscillatorGainsFromNormalizedValue");
+
+      this.nodes.oscillatorGainNodes.forEach((gainNode, i) => {
+        if (i === 0) return;
+
+        let unnormalized = 1 + v * (this.numOscillators - 1);
+        const gain = clamp(unnormalized - i);
+
+        gainNode.gain.rampTo(gain, rampTime);
+      });
+    },
+
     setChord(notes, rampTime = 0.1) {
       console.log("setChord");
 
@@ -47,7 +61,6 @@ function createAudioEngine(numOscillators = 5) {
         if (i > this.numOscillators - 1) break;
 
         this.nodes.oscillatorNodes[i].frequency.rampTo(note, rampTime);
-        //     console.log(note);
       }
     },
 
