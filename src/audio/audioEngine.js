@@ -9,8 +9,9 @@ function createAudioEngine(numOscillators = 5) {
   const oscillatorGainNodes = [];
 
   for (let i = 0; i < numOscillators; i++) {
-    const oscillatorNode = new Tone.Oscillator("A4", "sawtooth").start();
-    oscillatorNode.volume.value = -12;
+    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm").start();
+    // const oscillatorNode = new Tone.Oscillator("A4", "square").start();
+    oscillatorNode.volume.value = -24;
     oscillatorNodes.push(oscillatorNode);
 
     const oscillatorGainNode = new Tone.Gain(1);
@@ -19,7 +20,7 @@ function createAudioEngine(numOscillators = 5) {
 
   // create other nodes
   const oscillatorsSumGainNode = new Tone.Gain(1);
-  const filterNode = new Tone.Filter(800, "lowpass");
+  const filterNode = new Tone.Filter(4000, "lowpass");
 
   //connections
   oscillatorNodes.forEach((oscillatorNode, i) => {
