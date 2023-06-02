@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
+
+
 import AudioEngine from "./components/AudioEngine";
+import PoseNet from "./components/PoseNet";
+
 
 import "./App.css";
 
@@ -30,6 +34,7 @@ function App() {
   return (
     <>
       <AudioEngine modX={audioModX} modY={audioModY} />
+      <PoseNet/>
       <div>
         <button
           onClick={() => {
