@@ -123,8 +123,19 @@ function createAudioEngine(numOscillators = 5) {
         }
 
         gainNode.gain.rampTo(thisGain, thisRampTime);
+
         gains.push(thisGain);
       });
+
+      //Compensate vol
+      const totalGain = gains.reduce((prev, curr) => prev + curr, 0);
+      const compFactor = 0.05;
+      const oscillatorsSumGainNodeGain = 1 - totalGain * compFactor;
+
+      this.nodes.oscillatorsSumGainNode.gain.rampTo(
+        oscillatorsSumGainNodeGain,
+        rampTime
+      );
 
       return gains;
     },
