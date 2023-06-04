@@ -53,6 +53,18 @@ function createAudioEngine(numOscillators = 5) {
   const delayNode = new Tone.PingPongDelay("16n", 0.2);
   const filterNode = new Tone.Filter(1000, "lowpass");
 
+  const sidechainGainNode = new Tone.Gain(1);
+
+  const sidechainEnvelopeNode = new Tone.Envelope({
+    attack: 0,
+    decay: 0.2,
+    sustain: 1,
+    release: 1,
+  });
+
+  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(1); //The depth of the sidechain
+  const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
+
   //connections
   oscillatorNodes.forEach((oscillatorNode, i) => {
     oscillatorNode.chain(
@@ -65,22 +77,29 @@ function createAudioEngine(numOscillators = 5) {
   oscillatorsSumGainNode.connect(delayNode);
   delayNode.connect(filterNode);
 
-  filterNode.toDestination();
+  filterNode.connect(sidechainGainNode);
 
-  // Kick pattern
-  const kickPattern = new Tone.Pattern(
-    (time, note) => {
-      kickPlayer.start(time); // Trigger the kick sample
-    },
-    ["C1"], // The kick sample will always play at C1
-    "up" // Set the pattern direction
+  sidechainGainNode.toDestination();
+
+  sidechainEnvelopeNode.chain(
+    sidechainEnvelopeMultiplyNode,
+    sidechainEnvelopeInvertNode
   );
 
-  // Set the kick pattern to play on every quarter note
-  kickPattern.interval = "4n";
-  kickPattern.start();
+  sidechainEnvelopeInvertNode.connect(sidechainGainNode.gain);
 
-  // Start the kick pattern when the transport starts
+  //Loop
+
+  const loop = new Tone.Loop((time) => {
+    console.log("loop1");
+
+    //This note length is like the "hold" time for the sidechain (?)
+    sidechainEnvelopeNode.triggerAttackRelease("8n", time);
+
+    kickPlayer.start(time);
+  }, "4n").start(0);
+
+  // Start the transport
   Tone.Transport.start();
 
   return {
@@ -92,8 +111,14 @@ function createAudioEngine(numOscillators = 5) {
       filterNode,
       panners,
       delayNode,
+      //sidechain stuff
+      sidechainGainNode,
+      sidechainEnvelopeNode,
+      sidechainEnvelopeMultiplyNode,
+      sidechainEnvelopeInvertNode,
+
       kickPlayer,
-      kickPattern,
+      loop, //is this really a "node"?
     },
 
     numOscillators,
