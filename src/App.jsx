@@ -11,6 +11,7 @@ function App() {
   const [audioModX, setAudioModX] = useState(0);
   const [audioModY, setAudioModY] = useState(0);
 
+
   const [isTrackingMouse, setIsTrackingMouse] = useState(false);
 
   //Track mouse
@@ -34,7 +35,7 @@ function App() {
   return (
     <>
       <AudioEngine modX={audioModX} modY={audioModY} />
-      <PoseNet/>
+      <PoseNet setModX={setAudioModX} setModY={setAudioModY} />
       <div>
         <button
           onClick={() => {
