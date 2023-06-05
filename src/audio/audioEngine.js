@@ -62,7 +62,7 @@ function createAudioEngine(numOscillators = 5) {
     release: 1,
   });
 
-  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(1); //The depth of the sidechain
+  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.5); //The depth of the sidechain
   const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
 
   //connections
