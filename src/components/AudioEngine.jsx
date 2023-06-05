@@ -1,17 +1,23 @@
 import { useEffect, useState, useRef } from "react";
 import * as Tone from "tone";
 import { createAudioEngine } from "../audio/audioEngine";
-import { getChord, getMinVoices } from "../audio/chords";
+import { getChord, getMaxVoices } from "../audio/chords";
 
 function AudioEngine({ modX, modY }) {
   const [toneIsActive, setToneIsActive] = useState(false);
+
+  const [oscGains, setOscGains] = useState([]);
+
   const audioEngineRef = useRef();
 
   //"Modulation"
   useEffect(() => {
     if (audioEngineRef.current) {
       audioEngineRef.current.setChord(getChord(modX), 0.2);
-      audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY);
+      //set gains and catch in oscGains state
+      setOscGains(
+        audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY)
+      );
     }
   }, [modX, modY]);
 
@@ -20,9 +26,12 @@ function AudioEngine({ modX, modY }) {
       console.log("click");
 
       //create engine + init
-      audioEngineRef.current = createAudioEngine(getMinVoices());
+      audioEngineRef.current = createAudioEngine(getMaxVoices());
       audioEngineRef.current.setChord(getChord(0), 0);
-      audioEngineRef.current.setOscillatorGainsFromNormalizedValue(0, 0.5);
+      //set gains and catch in oscGains state
+      setOscGains(
+        audioEngineRef.current.setOscillatorGainsFromNormalizedValue(0, 0.5)
+      );
 
       Tone.start();
       setToneIsActive(true);
@@ -45,6 +54,13 @@ function AudioEngine({ modX, modY }) {
 
       <p>X:{modX}</p>
       <p>Y:{modY}</p>
+      <div className="oscDebugContainer">
+        {oscGains.map((v) => (
+          <div className="oscDebugContainer--item">
+            {Math.round(v * 100) / 100}
+          </div>
+        ))}
+      </div>
     </>
   );
 }

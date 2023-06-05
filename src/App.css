@@ -18,6 +18,14 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+.chordSetPickerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -39,4 +47,15 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* temp css */
+.oscDebugContainer {
+  display: flex;
+  justify-content: space-around;
+}
+
+.oscDebugContainer--item {
+  width: 64px;
+  text-align: left;
 }
