@@ -4,65 +4,75 @@ import { createAudioEngine } from "../audio/audioEngine";
 import { getChord, getMaxVoices } from "../audio/chords";
 
 function AudioEngine({ modX, modY }) {
-  const [toneIsActive, setToneIsActive] = useState(false);
+	const [toneIsActive, setToneIsActive] = useState(false);
 
-  const [oscGains, setOscGains] = useState([]);
+	const [drumsIsPlaying, setDrumsIsPlaying] = useState(false);
 
-  const audioEngineRef = useRef();
+	const [oscGains, setOscGains] = useState([]);
 
-  //"Modulation"
-  useEffect(() => {
-    if (audioEngineRef.current) {
-      audioEngineRef.current.setChord(getChord(modX), 0.2);
-      //set gains and catch in oscGains state
-      setOscGains(
-        audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY)
-      );
-    }
-  }, [modX, modY]);
+	const audioEngineRef = useRef();
 
-  function handleClick() {
-    if (!audioEngineRef.current) {
-      console.log("click");
+	//"Modulation"
+	useEffect(() => {
+		if (audioEngineRef.current) {
+			audioEngineRef.current.setChord(getChord(modX), 0.2);
+			//set gains and catch in oscGains state
+			setOscGains(
+				audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY)
+			);
+		}
+	}, [modX, modY]);
 
-      //create engine + init
-      audioEngineRef.current = createAudioEngine(getMaxVoices());
-      audioEngineRef.current.setChord(getChord(0), 0);
-      //set gains and catch in oscGains state
-      setOscGains(
-        audioEngineRef.current.setOscillatorGainsFromNormalizedValue(0, 0.5)
-      );
+	function handleClick() {
+		if (!audioEngineRef.current) {
+			console.log("click");
 
-      Tone.start();
-      setToneIsActive(true);
-    } else {
-      audioEngineRef.current.dispose();
-      audioEngineRef.current = undefined;
-      setToneIsActive(false);
-    }
+			//create engine + init
+			audioEngineRef.current = createAudioEngine(getMaxVoices());
+			audioEngineRef.current.setChord(getChord(0), 0);
+			//set gains and catch in oscGains state
+			setOscGains(
+				audioEngineRef.current.setOscillatorGainsFromNormalizedValue(0, 0.5)
+			);
 
-    // Tone.Transport.toggle();
-  }
+			Tone.start();
+			setToneIsActive(true);
+		} else {
+			audioEngineRef.current.dispose();
+			audioEngineRef.current = undefined;
+			setToneIsActive(false);
+		}
 
-  return (
-    <>
-      <div>
-        <button onClick={handleClick}>
-          {!toneIsActive ? "Tone: START" : "Tone: STOP"}
-        </button>
-      </div>
+		// Tone.Transport.toggle();
+	}
 
-      <p>X:{modX}</p>
-      <p>Y:{modY}</p>
-      <div className="oscDebugContainer">
-        {oscGains.map((v) => (
-          <div className="oscDebugContainer--item">
-            {Math.round(v * 100) / 100}
-          </div>
-        ))}
-      </div>
-    </>
-  );
+	const handleClickDrums = () => {
+		setDrumsIsPlaying(!drumsIsPlaying);
+		audioEngineRef.current.startLoop();
+	};
+
+	return (
+		<>
+			<div>
+				<button onClick={handleClick}>
+					{!toneIsActive ? "Tone: START" : "Tone: STOP"}
+				</button>
+			</div>
+
+			<p>X:{modX}</p>
+			<p>Y:{modY}</p>
+			<div className="oscDebugContainer">
+				{oscGains.map((v) => (
+					<div className="oscDebugContainer--item">
+						{Math.round(v * 100) / 100}
+					</div>
+				))}
+			</div>
+			<button onClick={handleClickDrums}>
+				{!drumsIsPlaying ? "Drums START" : "Drums: STOP"}
+			</button>
+		</>
+	);
 }
 
 export default AudioEngine;
