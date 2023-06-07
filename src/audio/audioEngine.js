@@ -2,6 +2,7 @@ import * as Tone from "tone";
 import { clamp } from "../utils/utils";
 
 import kickSample from "../../public/sounds/kick.wav";
+import snareSample from "../../public/sounds/snare.wav";
 
 function createAudioEngine(numOscillators = 5) {
 	console.log("—— AUDIO ENGINE: CREATE ——");
@@ -9,8 +10,7 @@ function createAudioEngine(numOscillators = 5) {
 	// Create the kick player
 	const kickPlayer = new Tone.Player(kickSample).toDestination();
 
-	// Set the BPM to 120
-	Tone.Transport.bpm.value = 120;
+	const snarePlayer = new Tone.Player(snareSample).toDestination();
 
 	//create oscillator + gain nodes
 	const oscillatorNodes = [];
@@ -90,14 +90,82 @@ function createAudioEngine(numOscillators = 5) {
 
 	//Loop
 
+	// const [currentPattern, setCurrentPattern] = useState(0);
+	const patterns = [
+		{
+			bpm: 120,
+			kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+			snarePattern: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		},
+		{
+			bpm: 120,
+			kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+			snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+		},
+
+		{
+			bpm: 135,
+			kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+			snarePattern: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+		},
+		{
+			bpm: 80,
+			kickPattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+			snarePattern: [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+		},
+		{
+			bpm: 120,
+			kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+			snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+		},
+		{
+			bpm: 100,
+			kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+			snarePattern: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0],
+		},
+	];
+
+	let currentDrumPattern = 0;
+
+	// Set the BPM to 120
+
+	const getRandomPatternIndex = () => {
+		let newPatternIndex = null;
+		currentDrumPattern = Math.floor(Math.random() * patterns.length);
+		if (newPatternIndex === currentDrumPattern) {
+			return getRandomPatternIndex();
+		}
+		newPatternIndex = currentDrumPattern;
+	};
+
+	const loopCallback = (time) => {
+		const sixteenthNote = Tone.Time("16n").toSeconds();
+		const currentPattern = patterns[currentDrumPattern];
+		const beatIndex = Math.floor(time / sixteenthNote) % 16;
+
+		console.log(sixteenthNote);
+
+		const kickStep = currentPattern.kickPattern[beatIndex];
+		const snareStep = currentPattern.snarePattern[beatIndex];
+
+		Tone.Transport.bpm.value = patterns[currentDrumPattern].bpm;
+
+		if (kickStep === 1) {
+			kickPlayer.start(time);
+		}
+		if (snareStep === 1) {
+			snarePlayer.start(time);
+		}
+	};
+
 	const loop = new Tone.Loop((time) => {
 		console.log("loop1");
 
 		//This note length is like the "hold" time for the sidechain (?)
 		sidechainEnvelopeNode.triggerAttackRelease("8n", time);
 
-		kickPlayer.start(time);
-	}, "4n");
+		loopCallback(time);
+	}, "16n");
 
 	let loopIsStarted = false;
 
@@ -125,6 +193,7 @@ function createAudioEngine(numOscillators = 5) {
 
 		numOscillators,
 		currentChord: [],
+		getRandomPatternIndex,
 
 		getOscillatorGains() {
 			return this.nodes.oscillatorGainNodes.map(
@@ -136,7 +205,7 @@ function createAudioEngine(numOscillators = 5) {
 			if (!loopIsStarted) {
 				loop.start(0);
 				loopIsStarted = !loopIsStarted;
-			} else {
+			} else if (loopIsStarted) {
 				loop.stop();
 				loopIsStarted = !loopIsStarted;
 			}

@@ -51,6 +51,10 @@ function AudioEngine({ modX, modY }) {
 		audioEngineRef.current.startLoop();
 	};
 
+	const handleRandomDrumsClick = () => {
+		audioEngineRef.current.getRandomPatternIndex();
+	};
+
 	return (
 		<>
 			<div>
@@ -71,6 +75,7 @@ function AudioEngine({ modX, modY }) {
 			<button onClick={handleClickDrums}>
 				{!drumsIsPlaying ? "Drums START" : "Drums: STOP"}
 			</button>
+			<button onClick={handleRandomDrumsClick}>Pattern: RANDOM</button>
 		</>
 	);
 }

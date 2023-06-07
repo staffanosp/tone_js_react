@@ -10,8 +10,6 @@ function App() {
 
 	const [isTrackingMouse, setIsTrackingMouse] = useState(false);
 
-	const [chordSetIndex, setChordSetIndex] = useState(0);
-
 	//Track mouse
 	useEffect(() => {
 		const _listener = (e) => {
@@ -30,11 +28,6 @@ function App() {
 		}; //cleanup
 	}, [isTrackingMouse]);
 
-	// Change chord set when chordSetIndex is updated
-	useEffect(() => {
-		changeChordSet(chordSetIndex);
-	}, [chordSetIndex]);
-
 	return (
 		<>
 			<AudioEngine modX={audioModX} modY={audioModY} />
@@ -47,17 +40,7 @@ function App() {
 					{isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
 				</button>
 				<div className="chordSetPickerContainer">
-					<button
-						onClick={() => setChordSetIndex((prevIndex) => prevIndex - 1)}
-					>
-						-
-					</button>
-					<div>Chord Set: {chordSetIndex}</div>
-					<button
-						onClick={() => setChordSetIndex((prevIndex) => prevIndex + 1)}
-					>
-						+
-					</button>
+					<button onClick={() => changeChordSet()}>Chord Set: RANDOM</button>
 				</div>
 			</div>
 		</>
