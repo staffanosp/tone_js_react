@@ -5,282 +5,298 @@ import kickSample from "../../public/sounds/kick.wav";
 import snareSample from "../../public/sounds/snare.wav";
 
 function createAudioEngine(numOscillators = 5) {
-	console.log("—— AUDIO ENGINE: CREATE ——");
+  console.log("—— AUDIO ENGINE: CREATE ——");
 
-	// Create the kick player
-	const kickPlayer = new Tone.Player(kickSample).toDestination();
+  // Create the kick player
+  const kickPlayerNode = new Tone.Player(kickSample);
 
-	const snarePlayer = new Tone.Player(snareSample).toDestination();
+  const snarePlayerNode = new Tone.Player(snareSample);
 
-	//create oscillator + gain nodes
-	const oscillatorNodes = [];
-	const oscillatorGainNodes = [];
-	const panners = [];
+  //create oscillator + gain nodes
+  const oscillatorNodes = [];
+  const oscillatorGainNodes = [];
+  const panners = [];
 
-	// Adjust the panning spread
-	const panSpread = 0.5;
+  // Adjust the panning spread
+  const panSpread = 0.5;
 
-	for (let i = 0; i < numOscillators; i++) {
-		const oscillatorNode = new Tone.OmniOscillator("A4", "pwm").start();
-		// const oscillatorNode = new Tone.Oscillator("A4", "square").start();
+  for (let i = 0; i < numOscillators; i++) {
+    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm").start();
+    // const oscillatorNode = new Tone.Oscillator("A4", "square").start();
 
-		oscillatorNode.volume.value = -24;
-		oscillatorNodes.push(oscillatorNode);
+    oscillatorNode.volume.value = -24;
+    oscillatorNodes.push(oscillatorNode);
 
-		const oscillatorGainNode = new Tone.Gain(0);
-		oscillatorGainNodes.push(oscillatorGainNode);
+    const oscillatorGainNode = new Tone.Gain(0);
+    oscillatorGainNodes.push(oscillatorGainNode);
 
-		const panner = new Tone.Panner(0);
+    const panner = new Tone.Panner(0);
 
-		let panning;
-		if (i === 0) {
-			panning = 0; // Center the first osc
-		} else {
-			const panStep = panSpread / (numOscillators - 1);
-			panning = i * panStep - panSpread / 2;
-		}
+    let panning;
+    if (i === 0) {
+      panning = 0; // Center the first osc
+    } else {
+      const panStep = panSpread / (numOscillators - 1);
+      panning = i * panStep - panSpread / 2;
+    }
 
-		// const panning = (i / (numOscillators - 1)) * 2 - 1; // Range from -1 to 1
-		panner.pan.value = panning;
+    // const panning = (i / (numOscillators - 1)) * 2 - 1; // Range from -1 to 1
+    panner.pan.value = panning;
 
-		panners.push(panner);
-	}
+    panners.push(panner);
+  }
 
-	console.log(`Created: ${numOscillators} oscillators`);
+  console.log(`Created: ${numOscillators} oscillators`);
 
-	// create other nodes
-	const oscillatorsSumGainNode = new Tone.Gain(1);
-	const delayNode = new Tone.PingPongDelay("16n", 0.2);
-	const filterNode = new Tone.Filter(1000, "lowpass");
+  // create other nodes
+  const oscillatorsSumGainNode = new Tone.Gain(1);
+  const delayNode = new Tone.PingPongDelay("16n", 0.2);
+  const filterNode = new Tone.Filter(1000, "lowpass");
 
-	const sidechainGainNode = new Tone.Gain(1);
+  const sidechainGainNode = new Tone.Gain(1);
 
-	const sidechainEnvelopeNode = new Tone.Envelope({
-		attack: 0,
-		decay: 0.2,
-		sustain: 1,
-		release: 1,
-	});
+  const sidechainEnvelopeNode = new Tone.Envelope({
+    attack: 0,
+    decay: 0.2,
+    sustain: 1,
+    release: 1,
+  });
 
-	const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.3); //The depth of the sidechain
-	const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
+  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.3); //The depth of the sidechain
+  const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
 
-	//connections
-	oscillatorNodes.forEach((oscillatorNode, i) => {
-		oscillatorNode.chain(
-			oscillatorGainNodes[i],
-			panners[i],
-			oscillatorsSumGainNode
-		);
-	});
+  const masterGainNode = new Tone.Gain(1);
 
-	oscillatorsSumGainNode.connect(delayNode);
-	delayNode.connect(filterNode);
+  const analyserNode = new Tone.Analyser("fft");
+  // analyserNode.smoothing = 0;
 
-	filterNode.connect(sidechainGainNode);
+  //connections
+  oscillatorNodes.forEach((oscillatorNode, i) => {
+    oscillatorNode.chain(
+      oscillatorGainNodes[i],
+      panners[i],
+      oscillatorsSumGainNode
+    );
+  });
 
-	sidechainGainNode.toDestination();
+  oscillatorsSumGainNode.connect(delayNode);
+  delayNode.connect(filterNode);
 
-	sidechainEnvelopeNode.chain(
-		sidechainEnvelopeMultiplyNode,
-		sidechainEnvelopeInvertNode
-	);
+  filterNode.connect(sidechainGainNode);
+  sidechainGainNode.connect(masterGainNode);
 
-	sidechainEnvelopeInvertNode.connect(sidechainGainNode.gain);
+  kickPlayerNode.connect(masterGainNode);
+  snarePlayerNode.connect(masterGainNode);
 
-	//Loop
+  masterGainNode.connect(analyserNode);
+  masterGainNode.toDestination();
 
-	// const [currentPattern, setCurrentPattern] = useState(0);
-	const patterns = [
-		{
-			bpm: 120,
-			kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-			snarePattern: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		},
-		{
-			bpm: 120,
-			kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
-			snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-		},
+  //connect modulation
+  sidechainEnvelopeNode.chain(
+    sidechainEnvelopeMultiplyNode,
+    sidechainEnvelopeInvertNode
+  );
 
-		{
-			bpm: 135,
-			kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-			snarePattern: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-		},
-		{
-			bpm: 80,
-			kickPattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-			snarePattern: [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-		},
-		{
-			bpm: 120,
-			kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0],
-			snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-		},
-		{
-			bpm: 100,
-			kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-			snarePattern: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0],
-		},
-	];
+  sidechainEnvelopeInvertNode.connect(sidechainGainNode.gain);
 
-	let currentDrumPattern = 0;
+  //Loop
 
-	// Set the BPM to 120
+  // const [currentPattern, setCurrentPattern] = useState(0);
+  const patterns = [
+    {
+      bpm: 120,
+      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      snarePattern: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    {
+      bpm: 120,
+      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+      snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    },
 
-	const getRandomPatternIndex = () => {
-		let newPatternIndex = null;
-		currentDrumPattern = Math.floor(Math.random() * patterns.length);
-		if (newPatternIndex === currentDrumPattern) {
-			return getRandomPatternIndex();
-		}
-		newPatternIndex = currentDrumPattern;
-	};
+    {
+      bpm: 135,
+      kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+      snarePattern: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+    },
+    {
+      bpm: 80,
+      kickPattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+      snarePattern: [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    },
+    {
+      bpm: 120,
+      kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+      snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+    },
+    {
+      bpm: 100,
+      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      snarePattern: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0],
+    },
+  ];
 
-	const loopCallback = (time) => {
-		const sixteenthNote = Tone.Time("16n").toSeconds();
-		const currentPattern = patterns[currentDrumPattern];
-		const beatIndex = Math.floor(time / sixteenthNote) % 16;
+  let currentDrumPattern = 0;
 
-		console.log(sixteenthNote);
+  // Set the BPM to 120
 
-		const kickStep = currentPattern.kickPattern[beatIndex];
-		const snareStep = currentPattern.snarePattern[beatIndex];
+  const getRandomPatternIndex = () => {
+    let newPatternIndex = null;
+    currentDrumPattern = Math.floor(Math.random() * patterns.length);
+    if (newPatternIndex === currentDrumPattern) {
+      return getRandomPatternIndex();
+    }
+    newPatternIndex = currentDrumPattern;
+  };
 
-		Tone.Transport.bpm.value = patterns[currentDrumPattern].bpm;
+  const loopCallback = (time) => {
+    const sixteenthNote = Tone.Time("16n").toSeconds();
+    const currentPattern = patterns[currentDrumPattern];
+    const beatIndex = Math.floor(time / sixteenthNote) % 16;
 
-		if (kickStep === 1) {
-			kickPlayer.start(time);
-		}
-		if (snareStep === 1) {
-			snarePlayer.start(time);
-		}
-	};
+    console.log(sixteenthNote);
 
-	const loop = new Tone.Loop((time) => {
-		console.log("loop1");
+    const kickStep = currentPattern.kickPattern[beatIndex];
+    const snareStep = currentPattern.snarePattern[beatIndex];
 
-		//This note length is like the "hold" time for the sidechain (?)
-		sidechainEnvelopeNode.triggerAttackRelease("8n", time);
+    Tone.Transport.bpm.value = patterns[currentDrumPattern].bpm;
 
-		loopCallback(time);
-	}, "16n");
+    if (kickStep === 1) {
+      kickPlayerNode.start(time);
+    }
+    if (snareStep === 1) {
+      snarePlayerNode.start(time);
+    }
+  };
 
-	let loopIsStarted = false;
+  const loop = new Tone.Loop((time) => {
+    console.log("loop1");
 
-	// Start the transport
-	Tone.Transport.start();
+    //This note length is like the "hold" time for the sidechain (?)
+    sidechainEnvelopeNode.triggerAttackRelease("8n", time);
 
-	return {
-		//References to nodes, can be nodes, arrays of nodes or objects with nodes as values
-		nodes: {
-			oscillatorNodes,
-			oscillatorGainNodes,
-			oscillatorsSumGainNode,
-			filterNode,
-			panners,
-			delayNode,
-			//sidechain stuff
-			sidechainGainNode,
-			sidechainEnvelopeNode,
-			sidechainEnvelopeMultiplyNode,
-			sidechainEnvelopeInvertNode,
+    loopCallback(time);
+  }, "16n");
 
-			kickPlayer,
-			loop, //is this really a "node"?
-		},
+  let loopIsStarted = false;
 
-		numOscillators,
-		currentChord: [],
-		getRandomPatternIndex,
+  // Start the transport
+  Tone.Transport.start();
 
-		getOscillatorGains() {
-			return this.nodes.oscillatorGainNodes.map(
-				(gainNode) => gainNode.gain.value
-			);
-		},
+  return {
+    //References to nodes, can be nodes, arrays of nodes or objects with nodes as values
+    nodes: {
+      oscillatorNodes,
+      oscillatorGainNodes,
+      oscillatorsSumGainNode,
+      filterNode,
+      panners,
+      delayNode,
+      //sidechain stuff
+      sidechainGainNode,
+      sidechainEnvelopeNode,
+      sidechainEnvelopeMultiplyNode,
+      sidechainEnvelopeInvertNode,
 
-		startLoop() {
-			if (!loopIsStarted) {
-				loop.start(0);
-				loopIsStarted = !loopIsStarted;
-			} else if (loopIsStarted) {
-				loop.stop();
-				loopIsStarted = !loopIsStarted;
-			}
-		},
+      analyserNode,
 
-		setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {
-			console.log("setOscillatorGainsFromNormalizedValue");
+      masterGainNode,
 
-			const gains = []; //this is just to be able to return the gains, mostly for debug purposes
+      kickPlayerNode,
+      snarePlayerNode,
+      loop, //is this really a "node"?
+    },
 
-			this.nodes.oscillatorGainNodes.forEach((gainNode, i) => {
-				let thisGain;
-				let thisRampTime = rampTime;
+    numOscillators,
+    currentChord: [],
+    getRandomPatternIndex,
 
-				if (i > this.currentChord.length || this.currentChord.length === 0) {
-					thisGain = 0;
-					thisRampTime *= 2; //longer fade time when fading to 0
-				} else {
-					let unnormalized = 1 + v * (this.currentChord.length - 1);
-					thisGain = clamp(unnormalized - i);
-				}
+    getOscillatorGains() {
+      return this.nodes.oscillatorGainNodes.map(
+        (gainNode) => gainNode.gain.value
+      );
+    },
 
-				gainNode.gain.rampTo(thisGain, thisRampTime);
+    startLoop() {
+      if (!loopIsStarted) {
+        loop.start(0);
+        loopIsStarted = !loopIsStarted;
+      } else if (loopIsStarted) {
+        loop.stop();
+        loopIsStarted = !loopIsStarted;
+      }
+    },
 
-				gains.push(thisGain);
-			});
+    setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {
+      console.log("setOscillatorGainsFromNormalizedValue");
 
-			//Compensate vol
-			const totalGain = gains.reduce((prev, curr) => prev + curr, 0);
-			const compFactor = 0.05;
-			const oscillatorsSumGainNodeGain = 1 - totalGain * compFactor;
+      const gains = []; //this is just to be able to return the gains, mostly for debug purposes
 
-			this.nodes.oscillatorsSumGainNode.gain.rampTo(
-				oscillatorsSumGainNodeGain,
-				rampTime
-			);
+      this.nodes.oscillatorGainNodes.forEach((gainNode, i) => {
+        let thisGain;
+        let thisRampTime = rampTime;
 
-			return gains;
-		},
+        if (i > this.currentChord.length || this.currentChord.length === 0) {
+          thisGain = 0;
+          thisRampTime *= 2; //longer fade time when fading to 0
+        } else {
+          let unnormalized = 1 + v * (this.currentChord.length - 1);
+          thisGain = clamp(unnormalized - i);
+        }
 
-		setChord(chord, rampTime = 0.1) {
-			this.currentChord = chord;
+        gainNode.gain.rampTo(thisGain, thisRampTime);
 
-			const rndDetuneRange = 10;
+        gains.push(thisGain);
+      });
 
-			console.log("setChord");
+      //Compensate vol
+      const totalGain = gains.reduce((prev, curr) => prev + curr, 0);
+      const compFactor = 0.05;
+      const oscillatorsSumGainNodeGain = 1 - totalGain * compFactor;
 
-			for (const [i, note] of chord.entries()) {
-				if (i > this.numOscillators - 1) break;
+      this.nodes.oscillatorsSumGainNode.gain.rampTo(
+        oscillatorsSumGainNodeGain,
+        rampTime
+      );
 
-				this.nodes.oscillatorNodes[i].frequency.rampTo(note, rampTime);
-				this.nodes.oscillatorNodes[i].detune.rampTo(
-					Math.random() * rndDetuneRange,
-					rampTime
-				);
-			}
-		},
+      return gains;
+    },
 
-		//Dispose ALL nodes
-		dispose() {
-			const _dispose = (arr) => {
-				arr.forEach((node) => {
-					if ("dispose" in node) {
-						node.dispose();
-					} else {
-						_dispose(Array.isArray(node) ? node : Object.values(node));
-					}
-				});
-			};
+    setChord(chord, rampTime = 0.1) {
+      this.currentChord = chord;
 
-			_dispose(Object.values(this.nodes));
+      const rndDetuneRange = 10;
 
-			console.log("—— AUDIO ENGINE: DISPOSED ——");
-		},
-	};
+      console.log("setChord");
+
+      for (const [i, note] of chord.entries()) {
+        if (i > this.numOscillators - 1) break;
+
+        this.nodes.oscillatorNodes[i].frequency.rampTo(note, rampTime);
+        this.nodes.oscillatorNodes[i].detune.rampTo(
+          Math.random() * rndDetuneRange,
+          rampTime
+        );
+      }
+    },
+
+    //Dispose ALL nodes
+    dispose() {
+      const _dispose = (arr) => {
+        arr.forEach((node) => {
+          if ("dispose" in node) {
+            node.dispose();
+          } else {
+            _dispose(Array.isArray(node) ? node : Object.values(node));
+          }
+        });
+      };
+
+      _dispose(Object.values(this.nodes));
+
+      console.log("—— AUDIO ENGINE: DISPOSED ——");
+    },
+  };
 }
 
 export { createAudioEngine };
