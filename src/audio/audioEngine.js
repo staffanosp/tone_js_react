@@ -163,6 +163,9 @@ function createAudioEngine(numOscillators = 5) {
 
     if (kickStep === 1) {
       kickPlayerNode.start(time);
+
+      //sidechain trig
+      sidechainEnvelopeNode.triggerAttackRelease("8n", time);
     }
     if (snareStep === 1) {
       snarePlayerNode.start(time);
@@ -170,11 +173,6 @@ function createAudioEngine(numOscillators = 5) {
   };
 
   const loop = new Tone.Loop((time) => {
-    console.log("loop1");
-
-    //This note length is like the "hold" time for the sidechain (?)
-    sidechainEnvelopeNode.triggerAttackRelease("8n", time);
-
     loopCallback(time);
   }, "16n");
 
