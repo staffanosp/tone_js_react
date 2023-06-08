@@ -4,6 +4,7 @@ import "@tensorflow/tfjs-backend-webgl";
 import * as mpPose from "@mediapipe/pose";
 import * as tf from "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
+import styles from "../styles/posenet.module.css";
 
 function PoseNet({ setModX, setModY }) {
 	//refs
@@ -37,19 +38,20 @@ function PoseNet({ setModX, setModY }) {
 			posesRef.current = await detectorRef.current.estimatePoses(videoElm);
 
 			let rightWrist = posesRef.current[0]?.["keypoints"][10];
-			let leftWrist = posesRef.current[0]?.["keypoints"][9];
-			let combinedX = (leftWrist.x + rightWrist.x) / 1000;
-			let combinedY = (leftWrist.y + rightWrist.y) / 1000;
+			let valueX = 1 - rightWrist.x / webcamRef.current.clientWidth;
+			let valueY = 1 - rightWrist.y / webcamRef.current.clientHeight;
+			let roundedX = valueX.toFixed(3)
+			let roundedY = valueY.toFixed(3)
 
-			// Checks if the score is high enough to create a pose
+
 			if (
 				rightWrist &&
-				rightWrist.score > 0 &&
-				combinedX < 1 &&
-				combinedY < 1
+				rightWrist.score > 0.4 &&
+				roundedX < 1 &&
+				roundedY < 1
 			) {
-				setModX(combinedX);
-				setModY(combinedY);
+				setModX(roundedX);
+				setModY(roundedY);
 			} else {
 				console.log("didn't get a good enough view of the pose");
 			}
@@ -80,23 +82,15 @@ function PoseNet({ setModX, setModY }) {
 				});
 				webcamRef.current.srcObject = stream;
 			} catch (error) {
-				console.error("Error accessing webcam:", error);
+				console.error("couldnt activate cam", error);
 			}
 		};
-
 		setupCamera();
 	}, []);
 
 	return (
 		<>
-			<video
-				style={{
-					width: 640,
-					height: 480,
-				}}
-				ref={webcamRef}
-				autoPlay
-			/>
+			<video className={styles.webcam} ref={webcamRef} autoPlay />
 			<button onClick={toggleTracking}>
 				{isTrackingPose ? "Stop Tracking" : "Start Tracking"}
 			</button>
