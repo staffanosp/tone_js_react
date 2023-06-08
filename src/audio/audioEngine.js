@@ -62,12 +62,14 @@ function createAudioEngine(numOscillators = 5) {
     release: 1,
   });
 
-  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.3); //The depth of the sidechain
+  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.9); //The depth of the sidechain
   const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
 
   const masterGainNode = new Tone.Gain(1);
+  const masterLimiterNode = new Tone.Limiter(-1);
 
   const analyserNode = new Tone.Analyser("fft");
+  analyserNode.debug = true;
   // analyserNode.smoothing = 0;
 
   //connections
@@ -88,8 +90,10 @@ function createAudioEngine(numOscillators = 5) {
   kickPlayerNode.connect(masterGainNode);
   snarePlayerNode.connect(masterGainNode);
 
-  masterGainNode.connect(analyserNode);
-  masterGainNode.toDestination();
+  masterGainNode.connect(masterLimiterNode);
+
+  masterLimiterNode.connect(analyserNode);
+  masterLimiterNode.toDestination();
 
   //connect modulation
   sidechainEnvelopeNode.chain(
@@ -199,6 +203,7 @@ function createAudioEngine(numOscillators = 5) {
       analyserNode,
 
       masterGainNode,
+      masterLimiterNode,
 
       kickPlayerNode,
       snarePlayerNode,
