@@ -67,11 +67,15 @@ function AudioEngine({
   //"Modulation"
   useEffect(() => {
     if (audioEngineRef.current) {
+      //chord
       audioEngineRef.current.setChord(getChord(modX), 0.2);
       //set gains and catch in oscGains state
       setOscGains(
         audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY)
       );
+
+      //filter freq
+      audioEngineRef.current.setFilterFreqFromNormalizedValue(modY);
     }
   }, [modX, modY]);
 

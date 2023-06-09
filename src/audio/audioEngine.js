@@ -1,5 +1,5 @@
 import * as Tone from "tone";
-import { clamp } from "../utils/utils";
+import { clamp, curvefit3 } from "../utils/utils";
 
 import kickSample from "../../public/sounds/kick.wav";
 import snareSample from "../../public/sounds/snare.wav";
@@ -20,7 +20,9 @@ function createAudioEngine(numOscillators = 5) {
   const panSpread = 0.5;
 
   for (let i = 0; i < numOscillators; i++) {
-    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm");
+    const type = i === 0 ? "sine" : "pwm";
+
+    const oscillatorNode = new Tone.OmniOscillator("A4", type);
 
     oscillatorNode.volume.value = -24;
     oscillatorNodes.push(oscillatorNode);
@@ -47,8 +49,9 @@ function createAudioEngine(numOscillators = 5) {
 
   // create other nodes
   const oscillatorsSumGainNode = new Tone.Gain(1);
-  const delayNode = new Tone.PingPongDelay("16n", 0.2);
-  const filterNode = new Tone.Filter(1000, "lowpass");
+  const delayNode = new Tone.PingPongDelay("16n", 0.5);
+  const filterNode = new Tone.Filter(10000, "lowpass");
+  filterNode.Q.value = 1;
 
   const sidechainGainNode = new Tone.Gain(1);
 
@@ -282,6 +285,16 @@ function createAudioEngine(numOscillators = 5) {
       );
 
       return gains;
+    },
+
+    setFilterFreqFromNormalizedValue(v, rampTime = 0.1) {
+      const min = 400;
+      const middle = 1000;
+      const max = 10000;
+
+      const freq = curvefit3(v, min, middle, max);
+
+      this.nodes.filterNode.frequency.rampTo(freq, rampTime);
     },
 
     setChord(chord, rampTime = 0.1) {
