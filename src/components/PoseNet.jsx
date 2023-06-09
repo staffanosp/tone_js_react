@@ -15,6 +15,7 @@ function PoseNet({ setModX, setModY }) {
 
 	//states
 	const [isTrackingPose, setisTrackingPose] = useState(false);
+	const [notEnoughData, setNotEnoughData] = useState(true);
 
 	// create detector
 	useEffect(() => {
@@ -40,20 +41,13 @@ function PoseNet({ setModX, setModY }) {
 			let rightWrist = posesRef.current[0]?.["keypoints"][10];
 			let valueX = 1 - rightWrist.x / webcamRef.current.clientWidth;
 			let valueY = 1 - rightWrist.y / webcamRef.current.clientHeight;
-			let roundedX = valueX.toFixed(3)
-			let roundedY = valueY.toFixed(3)
+			let roundedX = valueX.toFixed(3);
+			let roundedY = valueY.toFixed(3);
 
-
-			if (
-				rightWrist &&
-				rightWrist.score > 0.4 &&
-				roundedX < 1 &&
-				roundedY < 1
-			) {
+			if (rightWrist && rightWrist.score > 0.4 && roundedX < 1 && roundedY < 1) {
 				setModX(roundedX);
 				setModY(roundedY);
-			} else {
-				console.log("didn't get a good enough view of the pose");
+				setNotEnoughData(false);
 			}
 		}
 	};
@@ -67,7 +61,7 @@ function PoseNet({ setModX, setModY }) {
 			setisTrackingPose(false);
 		} else {
 			// set the fps to 60
-			intervalRef.current = setInterval(estimatePose, 100 / 60);
+			intervalRef.current = setInterval(estimatePose, 1000 / 60);
 			console.log("I am animating");
 			setisTrackingPose(true);
 		}
@@ -91,6 +85,12 @@ function PoseNet({ setModX, setModY }) {
 	return (
 		<>
 			<video className={styles.webcam} ref={webcamRef} autoPlay />
+			{/* if there isnt enough data let the user know */}
+			<p>
+				{notEnoughData && isTrackingPose
+					? "can't get a good enough look on the pose, move back"
+					: ""}
+			</p>
 			<button onClick={toggleTracking}>
 				{isTrackingPose ? "Stop Tracking" : "Start Tracking"}
 			</button>
