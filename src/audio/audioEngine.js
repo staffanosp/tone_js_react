@@ -6,7 +6,6 @@ import snareSample from "../../public/sounds/snare.wav";
 
 function createAudioEngine(numOscillators = 5) {
   console.log("—— AUDIO ENGINE: CREATE ——");
-
   // Create the kick player
   const kickPlayerNode = new Tone.Player(kickSample);
 
@@ -21,8 +20,7 @@ function createAudioEngine(numOscillators = 5) {
   const panSpread = 0.5;
 
   for (let i = 0; i < numOscillators; i++) {
-    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm").start();
-    // const oscillatorNode = new Tone.Oscillator("A4", "square").start();
+    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm");
 
     oscillatorNode.volume.value = -24;
     oscillatorNodes.push(oscillatorNode);
@@ -40,7 +38,6 @@ function createAudioEngine(numOscillators = 5) {
       panning = i * panStep - panSpread / 2;
     }
 
-    // const panning = (i / (numOscillators - 1)) * 2 - 1; // Range from -1 to 1
     panner.pan.value = panning;
 
     panners.push(panner);
@@ -65,11 +62,11 @@ function createAudioEngine(numOscillators = 5) {
   const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.9); //The depth of the sidechain
   const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
 
-  const masterGainNode = new Tone.Gain(1);
-  const masterLimiterNode = new Tone.Limiter(-1);
+  const masterSumGainNode = new Tone.Gain(1);
+  const masterLimiterNode = new Tone.Limiter(-0.2);
+  const masterVolumeNode = new Tone.Volume(-Infinity);
 
   const analyserNode = new Tone.Analyser("fft");
-  analyserNode.debug = true;
   // analyserNode.smoothing = 0;
 
   //connections
@@ -85,15 +82,17 @@ function createAudioEngine(numOscillators = 5) {
   delayNode.connect(filterNode);
 
   filterNode.connect(sidechainGainNode);
-  sidechainGainNode.connect(masterGainNode);
+  sidechainGainNode.connect(masterSumGainNode);
 
-  kickPlayerNode.connect(masterGainNode);
-  snarePlayerNode.connect(masterGainNode);
+  kickPlayerNode.connect(masterSumGainNode);
+  snarePlayerNode.connect(masterSumGainNode);
 
-  masterGainNode.connect(masterLimiterNode);
+  masterSumGainNode.connect(masterLimiterNode);
 
-  masterLimiterNode.connect(analyserNode);
-  masterLimiterNode.toDestination();
+  masterLimiterNode.connect(masterVolumeNode);
+
+  masterVolumeNode.connect(analyserNode);
+  masterVolumeNode.toDestination();
 
   //connect modulation
   sidechainEnvelopeNode.chain(
@@ -182,9 +181,6 @@ function createAudioEngine(numOscillators = 5) {
 
   let loopIsStarted = false;
 
-  // Start the transport
-  Tone.Transport.start();
-
   return {
     //References to nodes, can be nodes, arrays of nodes or objects with nodes as values
     nodes: {
@@ -202,8 +198,9 @@ function createAudioEngine(numOscillators = 5) {
 
       analyserNode,
 
-      masterGainNode,
+      masterSumGainNode,
       masterLimiterNode,
+      masterVolumeNode,
 
       kickPlayerNode,
       snarePlayerNode,
@@ -213,6 +210,28 @@ function createAudioEngine(numOscillators = 5) {
     numOscillators,
     currentChord: [],
     getRandomPatternIndex,
+
+    async init() {
+      console.log("start");
+
+      //start Tone
+      await Tone.start();
+
+      //start oscillators
+      this.nodes.oscillatorNodes.forEach((oscillatorNode) =>
+        oscillatorNode.start()
+      );
+    },
+
+    start() {
+      Tone.Transport.start();
+      this.nodes.masterVolumeNode.volume.rampTo(0, 1);
+    },
+
+    stop() {
+      Tone.Transport.stop();
+      this.nodes.masterVolumeNode.volume.rampTo(-Infinity, 1);
+    },
 
     getOscillatorGains() {
       return this.nodes.oscillatorGainNodes.map(
