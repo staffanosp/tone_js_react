@@ -20,10 +20,9 @@ const chordSets = [
 
 let chords = chordSets[0];
 
-const changeChordSet = (index) => {
-  if (index >= 0 && index < chordSets.length) {
-    chords = chordSets[index];
-  }
+const changeChordSet = () => {
+  chords = chordSets[Math.floor(Math.random() * chordSets.length)];
+  console.log(chords);
 };
 
 const normalizedToIndex = (v, length) => {

@@ -2,15 +2,14 @@ import * as Tone from "tone";
 import { clamp } from "../utils/utils";
 
 import kickSample from "../../public/sounds/kick.wav";
+import snareSample from "../../public/sounds/snare.wav";
 
 function createAudioEngine(numOscillators = 5) {
   console.log("—— AUDIO ENGINE: CREATE ——");
-
   // Create the kick player
-  const kickPlayer = new Tone.Player(kickSample).toDestination();
+  const kickPlayerNode = new Tone.Player(kickSample);
 
-  // Set the BPM to 120
-  Tone.Transport.bpm.value = 120;
+  const snarePlayerNode = new Tone.Player(snareSample);
 
   //create oscillator + gain nodes
   const oscillatorNodes = [];
@@ -21,8 +20,7 @@ function createAudioEngine(numOscillators = 5) {
   const panSpread = 0.5;
 
   for (let i = 0; i < numOscillators; i++) {
-    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm").start();
-    // const oscillatorNode = new Tone.Oscillator("A4", "square").start();
+    const oscillatorNode = new Tone.OmniOscillator("A4", "pwm");
 
     oscillatorNode.volume.value = -24;
     oscillatorNodes.push(oscillatorNode);
@@ -40,7 +38,6 @@ function createAudioEngine(numOscillators = 5) {
       panning = i * panStep - panSpread / 2;
     }
 
-    // const panning = (i / (numOscillators - 1)) * 2 - 1; // Range from -1 to 1
     panner.pan.value = panning;
 
     panners.push(panner);
@@ -62,8 +59,15 @@ function createAudioEngine(numOscillators = 5) {
     release: 1,
   });
 
-  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.5); //The depth of the sidechain
+  const sidechainEnvelopeMultiplyNode = new Tone.Multiply(0.9); //The depth of the sidechain
   const sidechainEnvelopeInvertNode = new Tone.Subtract(1); //Use a subtract to be able to do "1 - the envelope value"
+
+  const masterSumGainNode = new Tone.Gain(1);
+  const masterLimiterNode = new Tone.Limiter(-0.2);
+  const masterVolumeNode = new Tone.Volume(-Infinity);
+
+  const analyserNode = new Tone.Analyser("fft");
+  // analyserNode.smoothing = 0;
 
   //connections
   oscillatorNodes.forEach((oscillatorNode, i) => {
@@ -78,9 +82,19 @@ function createAudioEngine(numOscillators = 5) {
   delayNode.connect(filterNode);
 
   filterNode.connect(sidechainGainNode);
+  sidechainGainNode.connect(masterSumGainNode);
 
-  sidechainGainNode.toDestination();
+  kickPlayerNode.connect(masterSumGainNode);
+  snarePlayerNode.connect(masterSumGainNode);
 
+  masterSumGainNode.connect(masterLimiterNode);
+
+  masterLimiterNode.connect(masterVolumeNode);
+
+  masterVolumeNode.connect(analyserNode);
+  masterVolumeNode.toDestination();
+
+  //connect modulation
   sidechainEnvelopeNode.chain(
     sidechainEnvelopeMultiplyNode,
     sidechainEnvelopeInvertNode
@@ -90,17 +104,82 @@ function createAudioEngine(numOscillators = 5) {
 
   //Loop
 
+  // const [currentPattern, setCurrentPattern] = useState(0);
+  const patterns = [
+    {
+      bpm: 120,
+      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      snarePattern: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    {
+      bpm: 120,
+      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+      snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    },
+
+    {
+      bpm: 135,
+      kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+      snarePattern: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+    },
+    {
+      bpm: 80,
+      kickPattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+      snarePattern: [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    },
+    {
+      bpm: 120,
+      kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+      snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+    },
+    {
+      bpm: 100,
+      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      snarePattern: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0],
+    },
+  ];
+
+  let currentDrumPattern = 0;
+
+  // Set the BPM to 120
+
+  const getRandomPatternIndex = () => {
+    let newPatternIndex = null;
+    currentDrumPattern = Math.floor(Math.random() * patterns.length);
+    if (newPatternIndex === currentDrumPattern) {
+      return getRandomPatternIndex();
+    }
+    newPatternIndex = currentDrumPattern;
+  };
+
+  const loopCallback = (time) => {
+    const sixteenthNote = Tone.Time("16n").toSeconds();
+    const currentPattern = patterns[currentDrumPattern];
+    const beatIndex = Math.floor(time / sixteenthNote) % 16;
+
+    console.log(sixteenthNote);
+
+    const kickStep = currentPattern.kickPattern[beatIndex];
+    const snareStep = currentPattern.snarePattern[beatIndex];
+
+    Tone.Transport.bpm.value = patterns[currentDrumPattern].bpm;
+
+    if (kickStep === 1) {
+      kickPlayerNode.start(time);
+
+      //sidechain trig
+      sidechainEnvelopeNode.triggerAttackRelease("8n", time);
+    }
+    if (snareStep === 1) {
+      snarePlayerNode.start(time);
+    }
+  };
+
   const loop = new Tone.Loop((time) => {
-    console.log("loop1");
+    loopCallback(time);
+  }, "16n");
 
-    //This note length is like the "hold" time for the sidechain (?)
-    sidechainEnvelopeNode.triggerAttackRelease("8n", time);
-
-    kickPlayer.start(time);
-  }, "4n").start(0);
-
-  // Start the transport
-  Tone.Transport.start();
+  let loopIsStarted = false;
 
   return {
     //References to nodes, can be nodes, arrays of nodes or objects with nodes as values
@@ -117,17 +196,57 @@ function createAudioEngine(numOscillators = 5) {
       sidechainEnvelopeMultiplyNode,
       sidechainEnvelopeInvertNode,
 
-      kickPlayer,
+      analyserNode,
+
+      masterSumGainNode,
+      masterLimiterNode,
+      masterVolumeNode,
+
+      kickPlayerNode,
+      snarePlayerNode,
       loop, //is this really a "node"?
     },
 
     numOscillators,
     currentChord: [],
+    getRandomPatternIndex,
+
+    async init() {
+      console.log("start");
+
+      //start Tone
+      await Tone.start();
+
+      //start oscillators
+      this.nodes.oscillatorNodes.forEach((oscillatorNode) =>
+        oscillatorNode.start()
+      );
+    },
+
+    start() {
+      Tone.Transport.start();
+      this.nodes.masterVolumeNode.volume.rampTo(0, 1);
+    },
+
+    stop() {
+      Tone.Transport.stop();
+      this.nodes.masterVolumeNode.volume.rampTo(-Infinity, 1);
+    },
 
     getOscillatorGains() {
       return this.nodes.oscillatorGainNodes.map(
         (gainNode) => gainNode.gain.value
       );
+    },
+
+    startLoop() {
+      if (!loopIsStarted) {
+        loop.start(0);
+        loopIsStarted = !loopIsStarted;
+      } else if (loopIsStarted) {
+        loop.stop();
+        loopIsStarted = !loopIsStarted;
+      }
     },
 
     setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {
