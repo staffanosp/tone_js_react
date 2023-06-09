@@ -1,55 +1,12 @@
-<<<<<<< HEAD
-import { useEffect, useState } from "react";
-
-import AudioEngine from "./components/AudioEngine";
-import PoseNet from "./components/PoseNet";
-import { changeChordSet } from "./audio/chords";
-=======
 import { useEffect, useState, useRef } from "react";
 import AudioEngine from "./components/AudioEngine";
 import Visualizer from "./components/Visualizer";
 import UserControls from "./components/UserControls";
->>>>>>> master
+import PoseNet from "./components/PoseNet";
 
 import "./App.css";
 
 function App() {
-<<<<<<< HEAD
-  const [audioModX, setAudioModX] = useState(0);
-  const [audioModY, setAudioModY] = useState(0);
-
-  const [isTrackingMouse, setIsTrackingMouse] = useState(false);
-
-  const [chordSetIndex, setChordSetIndex] = useState(0);
-
-  //Track mouse
-  useEffect(() => {
-    const _listener = (e) => {
-      setAudioModX(e.clientX / window.innerWidth);
-      setAudioModY(1 - e.clientY / window.innerHeight);
-    };
-
-    if (isTrackingMouse) {
-      addEventListener("mousemove", _listener);
-    } else {
-      removeEventListener("mousemove", _listener);
-    }
-
-    return () => {
-      removeEventListener("mousemove", _listener);
-    }; //cleanup
-  }, [isTrackingMouse]);
-
-  // Change chord set when chordSetIndex is updated
-  useEffect(() => {
-    changeChordSet(chordSetIndex);
-  }, [chordSetIndex]);
-
-  return (
-    <>
-      <PoseNet setModX={setAudioModX} setModY={setAudioModY} />
-      <AudioEngine modX={audioModX} modY={audioModY} />
-=======
   const [showStartScreen, setShowStartScreen] = useState(true);
 
   const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
@@ -101,6 +58,7 @@ function App() {
   //The actual app
   return (
     <>
+      <PoseNet setModX={setAudioModX} setModY={setAudioModY} />
       <UserControls
         {...{
           audioEngineIsPlaying,
@@ -118,7 +76,6 @@ function App() {
         analyserNodeRef={analyserNodeRef}
       />
 
->>>>>>> master
       <div>
         <button
           onClick={() => {
@@ -127,22 +84,6 @@ function App() {
         >
           {isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
         </button>
-<<<<<<< HEAD
-        <div className="chordSetPickerContainer">
-          <button
-            onClick={() => setChordSetIndex((prevIndex) => prevIndex - 1)}
-          >
-            -
-          </button>
-          <div>Chord Set: {chordSetIndex}</div>
-          <button
-            onClick={() => setChordSetIndex((prevIndex) => prevIndex + 1)}
-          >
-            +
-          </button>
-        </div>
-=======
->>>>>>> master
       </div>
     </>
   );
