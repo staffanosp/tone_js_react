@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
+import { Component, createRef } from "react";
 import { Renderer, Camera, Transform, Program, Mesh, Triangle, Color } from 'ogl';
+
+import { clamp } from "../utils/utils";
 
 import vertex from './shaders/vertex.glsl'
 import fragment from './shaders/fragment.glsl'
-import { clamp } from "../utils/utils";
+import fragment2 from './shaders/fragment2.glsl'
 
 //the "type" of analyser is set in audioEngine.js:
 //const analyserNode = new Tone.Analyser("fft");
@@ -72,91 +74,197 @@ import { clamp } from "../utils/utils";
 // }
 
 
-function Visualizer({ analyserNodeRef }) {
-  const canvasRef = useRef(null);
+// function Visualizer({ analyserNodeRef }) {
+//   const canvasRef = useRef(null);
 
-  const init = () => {
-    const renderer = new Renderer({ canvas: canvasRef.current });
-    const gl = renderer.gl;
-    const camera = new Camera(gl);
-    camera.position.z = 5;
+//   const init = () => {
+//     const renderer = new Renderer({ canvas: canvasRef.current });
+//     const gl = renderer.gl;
+//     const camera = new Camera(gl);
+//     camera.position.z = 5;
 
-    const scene = new Transform();
+//     const scene = new Transform();
 
-    const geometry = new Triangle(gl);
+//     const geometry = new Triangle(gl);
 
-    const program = new Program(gl, {
-      vertex,
-      fragment,
+//     const program = new Program(gl, {
+//       vertex,
+//       fragment,
+//       uniforms: {
+//         uTime: { value: 0 },
+//         bass: { value: 0 },
+//       }
+//     });
+
+//     const mesh = new Mesh(gl, { geometry, program });
+//     mesh.setParent(scene);
+
+//     function resize() {
+//       renderer.setSize(window.innerWidth, window.innerHeight);
+//       camera.perspective({
+//         aspect: gl.canvas.width / gl.canvas.height,
+//       });
+//     }
+//     window.addEventListener('resize', resize, false);
+//     canvasRef.current.addEventListener('click', () => { console.log('click') })
+//     resize();
+
+//     let lastLog = 0;
+
+//     function animate(t) {
+//       requestAnimationFrame(animate);
+
+//       program.uniforms.uTime.value = t * 0.001;
+
+//       if (analyserNodeRef.current !== null) {
+//         const buffer = analyserNodeRef.current?.getValue();
+//         const bufferSize = analyserNodeRef.current?.size;
+//         const sampleRate = 1 / analyserNodeRef.current?.sampleTime;
+
+
+//         let bassSum = 0;
+//         //What we want to calculate here which entries in the buffer are in our desired range.
+//         const lowerBin = Math.floor(20 / (sampleRate / bufferSize));
+//         const upperBin = Math.floor(200 / (sampleRate / bufferSize));
+
+//         // console.log({ bufferSize, sampleRate, buffer, lowerBin, upperBin })
+//         for (let i = lowerBin; i <= upperBin; i++) {
+//           bassSum += buffer[i];
+//         }
+
+//         const bassValue = clamp(Math.abs((bassSum / (upperBin - lowerBin + 1)) / 80));
+
+//         program.uniforms.bass.value = bassValue;
+
+
+//         // console.log({ bassSum, bassValue, lowerBin, upperBin, sampleRate, bufferSize, buffer })
+//         const diff = Math.abs(lastLog - bassValue);
+//         if (diff > 0.1) {
+//           lastLog = bassValue;
+//           console.log(bassValue)
+
+//         }
+//       }
+
+
+//       renderer.render({ scene: mesh });
+//     }
+
+//     animate();
+//   };
+
+//   useEffect(() => {
+//     init();
+//   }, []);
+
+//   return <>
+//     <canvas className="visualizer" ref={canvasRef} />
+//   </>
+// }
+
+
+class Visualizer extends Component {
+  constructor(props) {
+    super(props);
+    this.canvasRef = createRef();
+
+  }
+
+  componentDidMount() {
+    this.init();
+    this.createTriangle();
+    this.resize();
+    this.addEventListeners();
+    this.animate();
+  }
+
+  init() {
+    this.renderer = new Renderer({ canvas: this.canvasRef.current });
+    this.gl = this.renderer.gl;
+
+    this.camera = new Camera(this.gl);
+    this.camera.position.z = 5;
+
+    this.scene = new Transform();
+
+    this.lastLog = 0;
+  }
+
+  createTriangle() {
+    this.geometry = new Triangle(this.gl);
+
+    this.program = new Program(this.gl, {
+      vertex: vertex,
+      fragment: fragment,
       uniforms: {
         uTime: { value: 0 },
         bass: { value: 0 },
-      }
+      },
     });
 
-    const mesh = new Mesh(gl, { geometry, program });
-    mesh.setParent(scene);
+    this.mesh = new Mesh(this.gl, { geometry: this.geometry, program: this.program });
+    this.mesh.setParent(this.scene);
+  }
 
-    function resize() {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.perspective({
-        aspect: gl.canvas.width / gl.canvas.height,
-      });
-    }
-    window.addEventListener('resize', resize, false);
-    resize();
+  addEventListeners() {
+    window.addEventListener('resize', this.resize.bind(this), false);
 
-    let lastLog = 0;
+    this.canvasRef.current.addEventListener('click', this.changeFragment.bind(this));
+  }
 
-    function animate(t) {
-      requestAnimationFrame(animate);
+  changeFragment() {
+    console.log('YEP')
+  }
 
-      program.uniforms.uTime.value = t * 0.001;
+  resize() {
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.camera.perspective({
+      aspect: this.gl.canvas.width / this.gl.canvas.height,
+    });
+  }
 
-      if (analyserNodeRef.current !== null) {
-        const buffer = analyserNodeRef.current?.getValue();
-        const bufferSize = analyserNodeRef.current?.size;
-        const sampleRate = 1 / analyserNodeRef.current?.sampleTime;
+  animate(t) {
+    requestAnimationFrame(this.animate.bind(this)); //We use bind(this) so that the context of 'this' doesn't get lost
 
+    this.program.uniforms.uTime.value = t * 0.001;
 
-        let bassSum = 0;
-        //What we want to calculate here which entries in the buffer are in our desired range.
-        const lowerBin = Math.floor(20 / (sampleRate / bufferSize));
-        const upperBin = Math.floor(200 / (sampleRate / bufferSize));
+    const { analyserNodeRef } = this.props;
+    if (analyserNodeRef.current !== null) {
+      const buffer = analyserNodeRef.current?.getValue();
+      const bufferSize = analyserNodeRef.current?.size;
+      const sampleRate = 1 / analyserNodeRef.current?.sampleTime;
 
-        // console.log({ bufferSize, sampleRate, buffer, lowerBin, upperBin })
-        for (let i = lowerBin; i <= upperBin; i++) {
-          bassSum += buffer[i];
-        }
+      let bassSum = 0;
+      const lowerBin = Math.floor(20 / (sampleRate / bufferSize));
+      const upperBin = Math.floor(200 / (sampleRate / bufferSize));
 
-        const bassValue = clamp(Math.abs((bassSum / (upperBin - lowerBin + 1)) / 80));
-
-        program.uniforms.bass.value = bassValue;
-
-
-        // console.log({ bassSum, bassValue, lowerBin, upperBin, sampleRate, bufferSize, buffer })
-        const diff = Math.abs(lastLog - bassValue);
-        if (diff > 0.1) {
-          lastLog = bassValue;
-          console.log(bassValue)
-
-        }
+      for (let i = lowerBin; i <= upperBin; i++) {
+        bassSum += buffer[i];
       }
 
+      const bassValue = clamp(Math.abs((bassSum / (upperBin - lowerBin + 1)) / 80));
 
-      renderer.render({ scene: mesh });
+      this.program.uniforms.bass.value = bassValue;
+
+      const diff = Math.abs(this.lastLog - bassValue);
+      if (diff > 0.1) {
+        this.lastLog = bassValue;
+        console.log(bassValue);
+      }
     }
 
-    animate();
-  };
+    this.renderer.render({ scene: this.mesh });
+  }
 
-  useEffect(() => {
-    init();
-  }, []);
 
-  return <>
-    <canvas className="visualizer" ref={canvasRef} />
-  </>
+  render() {
+    return (
+      <>
+        <canvas className="visualizer" ref={this.canvasRef} />
+      </>
+    );
+  }
 }
+
 
 export default Visualizer;
