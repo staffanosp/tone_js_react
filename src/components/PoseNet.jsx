@@ -1,12 +1,12 @@
 //Libraries
 import React, { useRef, useEffect, useState } from "react";
-import "@tensorflow/tfjs-backend-webgl";
 import * as mpPose from "@mediapipe/pose";
 import * as tf from "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
+
 import styles from "../styles/posenet.module.css";
 
-function PoseNet({ setModX, setModY }) {
+function PoseNet({ setModX, setModY, isTrackingPose }) {
 	//refs
 	const webcamRef = useRef(null);
 	const detectorRef = useRef(null);
@@ -14,7 +14,6 @@ function PoseNet({ setModX, setModY }) {
 	const intervalRef = useRef(null);
 
 	//states
-	const [isTrackingPose, setisTrackingPose] = useState(false);
 	const [notEnoughData, setNotEnoughData] = useState(true);
 
 	// create detector
@@ -52,20 +51,18 @@ function PoseNet({ setModX, setModY }) {
 		}
 	};
 
-	//creates toggle for button
+	// toggles to activate pose
 
-	const toggleTracking = () => {
-		if (isTrackingPose) {
+	useEffect(() => {
+		if (!isTrackingPose) {
 			clearInterval(intervalRef.current);
 			console.log("I am no longer animating");
-			setisTrackingPose(false);
 		} else {
 			// set the fps to 60
 			intervalRef.current = setInterval(estimatePose, 1000 / 60);
 			console.log("I am animating");
-			setisTrackingPose(true);
 		}
-	};
+	}, [isTrackingPose]);
 
 	// create webcam
 	useEffect(() => {
@@ -91,9 +88,6 @@ function PoseNet({ setModX, setModY }) {
 					? "can't get a good enough look on the pose, move back"
 					: ""}
 			</p>
-			<button onClick={toggleTracking}>
-				{isTrackingPose ? "Stop Tracking" : "Start Tracking"}
-			</button>
 		</>
 	);
 }
