@@ -1,12 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import AudioEngine from "./components/AudioEngine";
 import Visualizer from "./components/Visualizer";
-
-import { changeChordSet } from "./audio/chords";
+import UserControls from "./components/UserControls";
 
 import "./App.css";
 
 function App() {
+  const [showStartScreen, setShowStartScreen] = useState(true);
+
+  const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
+  const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(false);
+  const [audioEngineRndChordSetTrig, setAudioEngineRndChordSetTrig] =
+    useState(0);
+
   const [audioModX, setAudioModX] = useState(0);
   const [audioModY, setAudioModY] = useState(0);
 
@@ -32,14 +38,42 @@ function App() {
     }; //cleanup
   }, [isTrackingMouse]);
 
+  const handleClickStart = () => {
+    setAudioEngineInitTrig((old) => ++old); //Initializes/starts the audio after user interaction
+
+    setShowStartScreen(false);
+  };
+
+  //The start screen
+  if (showStartScreen) {
+    return (
+      <>
+        <div>WELCOME.. BLAH BLAAH BLAAAH</div>
+        <button onClick={handleClickStart}>Start</button>
+      </>
+    );
+  }
+
+  //The actual app
   return (
     <>
+      <UserControls
+        {...{
+          audioEngineIsPlaying,
+          setAudioEngineIsIsPlaying,
+          setAudioEngineRndChordSetTrig,
+        }}
+      />
       <Visualizer analyserNodeRef={analyserNodeRef} />
       <AudioEngine
+        rndChordSetTrig={audioEngineRndChordSetTrig}
+        initTrig={audioEngineInitTrig}
+        isPlaying={audioEngineIsPlaying}
         modX={audioModX}
         modY={audioModY}
         analyserNodeRef={analyserNodeRef}
       />
+
       <div>
         <button
           onClick={() => {
@@ -48,9 +82,6 @@ function App() {
         >
           {isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
         </button>
-        <div className="chordSetPickerContainer">
-          <button onClick={() => changeChordSet()}>Chord Set: RANDOM</button>
-        </div>
       </div>
     </>
   );
