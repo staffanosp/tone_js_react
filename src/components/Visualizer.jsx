@@ -167,6 +167,8 @@ class Visualizer extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = createRef();
+    this.analyserNodeRef = this.props.analyserNodeRef;
+
 
   }
 
@@ -187,7 +189,6 @@ class Visualizer extends Component {
 
     this.scene = new Transform();
 
-    this.lastLog = 0;
   }
 
   createTriangle() {
@@ -198,7 +199,9 @@ class Visualizer extends Component {
       fragment: fragment,
       uniforms: {
         uTime: { value: 0 },
-        bass: { value: 0 },
+        bass: { value: 0.5 },
+        mids: { value: 0.5 },
+        highs: { value: 0.5 },
       },
     });
 
@@ -223,34 +226,48 @@ class Visualizer extends Component {
     });
   }
 
+  updateAudioBuffer() {
+    this.buffer = this.analyserNodeRef.current?.getValue();
+    this.bufferSize = this.analyserNodeRef.current?.size;
+    this.sampleRate = 1 / this.analyserNodeRef.current?.sampleTime;
+  }
+
+  getAudioBinValue(lower, upper) {
+    let sum = 0;
+    const lowerBin = Math.floor(lower / (this.sampleRate / this.bufferSize));
+    const upperBin = Math.floor(upper / (this.sampleRate / this.bufferSize));
+    const binCount = upperBin - lowerBin + 1;
+
+
+    for (let i = lowerBin; i <= upperBin; i++) {
+      sum += this.buffer[i];
+    }
+
+    const averageValue = sum / binCount;
+    const normalizedValue = Math.abs(averageValue) / 100;
+
+    return normalizedValue;
+  }
+
   animate(t) {
     requestAnimationFrame(this.animate.bind(this)); //We use bind(this) so that the context of 'this' doesn't get lost
 
     this.program.uniforms.uTime.value = t * 0.001;
+    if (this.analyserNodeRef.current !== undefined) {
 
-    const { analyserNodeRef } = this.props;
-    if (analyserNodeRef.current !== null) {
-      const buffer = analyserNodeRef.current?.getValue();
-      const bufferSize = analyserNodeRef.current?.size;
-      const sampleRate = 1 / analyserNodeRef.current?.sampleTime;
+      this.updateAudioBuffer();
 
-      let bassSum = 0;
-      const lowerBin = Math.floor(20 / (sampleRate / bufferSize));
-      const upperBin = Math.floor(200 / (sampleRate / bufferSize));
+      const bass = this.getAudioBinValue(20, 250);
+      const mids = this.getAudioBinValue(500, 2000);
+      const highs = this.getAudioBinValue(2000, 6000);
 
-      for (let i = lowerBin; i <= upperBin; i++) {
-        bassSum += buffer[i];
-      }
+      this.program.uniforms.bass.value = bass;
+      this.program.uniforms.mids.value = mids;
+      this.program.uniforms.highs.value = highs;
 
-      const bassValue = clamp(Math.abs((bassSum / (upperBin - lowerBin + 1)) / 80));
 
-      this.program.uniforms.bass.value = bassValue;
-
-      const diff = Math.abs(this.lastLog - bassValue);
-      if (diff > 0.1) {
-        this.lastLog = bassValue;
-        console.log(bassValue);
-      }
+      //temp logging
+      console.log({ bass, mids, highs })
     }
 
     this.renderer.render({ scene: this.mesh });

@@ -70,7 +70,7 @@ function createAudioEngine(numOscillators = 5) {
 
   const analyserNode = new Tone.Analyser("fft");
   analyserNode.debug = true;
-  // analyserNode.smoothing = 0;
+  analyserNode.smoothing = 0;
 
   //connections
   oscillatorNodes.forEach((oscillatorNode, i) => {
