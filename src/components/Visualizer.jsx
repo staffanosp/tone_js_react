@@ -1,8 +1,6 @@
 import { Component, createRef } from "react";
 import { Renderer, Camera, Transform, Program, Mesh, Triangle, Color } from 'ogl';
 
-import { clamp } from "../utils/utils";
-
 import vertex from './shaders/vertex.glsl'
 import fragment from './shaders/fragment.glsl'
 import fragment2 from './shaders/fragment2.glsl'
@@ -168,8 +166,10 @@ class Visualizer extends Component {
     super(props);
     this.canvasRef = createRef();
     this.analyserNodeRef = this.props.analyserNodeRef;
-
-
+    this.fragments = [fragment, fragment2];
+    this.state = {
+      fragment: 0
+    }
   }
 
   componentDidMount() {
@@ -178,6 +178,12 @@ class Visualizer extends Component {
     this.resize();
     this.addEventListeners();
     this.animate();
+  }
+
+  componentDidUpdate() {
+    console.log(this.state.fragment)
+    this.program.fragment = this.fragments[this.state.fragment];
+    // this.changeFragment();
   }
 
   init() {
@@ -196,7 +202,7 @@ class Visualizer extends Component {
 
     this.program = new Program(this.gl, {
       vertex: vertex,
-      fragment: fragment,
+      fragment: this.fragments[this.state.fragment],
       uniforms: {
         uTime: { value: 0 },
         bass: { value: 0.5 },
@@ -212,11 +218,19 @@ class Visualizer extends Component {
   addEventListeners() {
     window.addEventListener('resize', this.resize.bind(this), false);
 
-    this.canvasRef.current.addEventListener('click', this.changeFragment.bind(this));
   }
 
   changeFragment() {
-    console.log('YEP')
+    this.program = new Program(this.gl, {
+      vertex: vertex,
+      fragment: this.fragments[this.state.fragment],
+      uniforms: {
+        uTime: { value: 0 },
+        bass: { value: 0.5 },
+        mids: { value: 0.5 },
+        highs: { value: 0.5 },
+      },
+    });
   }
 
   resize() {
@@ -256,7 +270,7 @@ class Visualizer extends Component {
     if (this.analyserNodeRef.current !== undefined) {
 
       this.updateAudioBuffer();
-
+      //todo make it a "medelvärde" of 5 latest values - also calculate f where (value(x) = fx)
       const bass = this.getAudioBinValue(20, 250);
       const mids = this.getAudioBinValue(500, 2000);
       const highs = this.getAudioBinValue(2000, 6000);
@@ -267,7 +281,7 @@ class Visualizer extends Component {
 
 
       //temp logging
-      console.log({ bass, mids, highs })
+      // console.log({ bass, mids, highs })
     }
 
     this.renderer.render({ scene: this.mesh });
@@ -277,7 +291,10 @@ class Visualizer extends Component {
   render() {
     return (
       <>
-        <canvas className="visualizer" ref={this.canvasRef} />
+        <canvas onClick={() => this.setState({
+          fragment: this.state.fragment < this.fragments.length - 1 ? this.state.fragment + 1 : 0
+        })}
+          className="visualizer" ref={this.canvasRef} />
       </>
     );
   }
