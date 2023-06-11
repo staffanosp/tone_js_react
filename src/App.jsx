@@ -64,7 +64,11 @@ function App() {
           setAudioEngineRndChordSetTrig,
         }}
       />
-      <Visualizer analyserNodeRef={analyserNodeRef} />
+      <Visualizer
+        analyserNodeRef={analyserNodeRef}
+        modX={audioModX}
+        modY={audioModY}
+      />
       <AudioEngine
         rndChordSetTrig={audioEngineRndChordSetTrig}
         initTrig={audioEngineInitTrig}

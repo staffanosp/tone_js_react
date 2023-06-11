@@ -1,24 +1,19 @@
 import { Component, createRef } from "react";
-import { Renderer, Camera, Transform, Program, Mesh, Triangle, Color } from 'ogl';
+import PropTypes from 'prop-types';
+
+import { Renderer, Camera, Transform, Program, Mesh, Triangle, Vec2 } from 'ogl';
 
 import vertex from './shaders/vertex.glsl'
 import fragment from './shaders/fragment.glsl'
 import fragment2 from './shaders/fragment2.glsl'
 
-//the "type" of analyser is set in audioEngine.js:
-//const analyserNode = new Tone.Analyser("fft");
-
-//the smoothing is in the same file:
-//nalyserNode.smoothing = 0;
-
-//It should really not use this interval thing — it was just to get some logging thing to be done.
-//Make a proper frame loop :)
-
 class Visualizer extends Component {
   constructor(props) {
     super(props);
+    console.log(this.props);
     this.canvasRef = createRef();
-    this.analyserNodeRef = this.props.analyserNodeRef;
+    this.positionVector = new Vec2(props.modX, props.modY);
+    this.analyserNodeRef = props.analyserNodeRef;
     this.fragments = [fragment, fragment2];
     this.state = {
       fragment: 0
@@ -29,14 +24,12 @@ class Visualizer extends Component {
     this.init();
     this.createTriangle();
     this.resize();
-    this.addEventListeners();
+    this.addResizeEventListener();
     this.animate();
   }
 
   componentDidUpdate() {
-    console.log(this.state.fragment)
-    this.program.fragment = this.fragments[this.state.fragment];
-    // this.changeFragment();
+    this.program.uniforms.modPos.value.set(this.props.modX, this.props.modY);
   }
 
   init() {
@@ -47,7 +40,6 @@ class Visualizer extends Component {
     this.camera.position.z = 5;
 
     this.scene = new Transform();
-
   }
 
   createTriangle() {
@@ -58,9 +50,11 @@ class Visualizer extends Component {
       fragment: this.fragments[this.state.fragment],
       uniforms: {
         uTime: { value: 0 },
+        bassCurrent: { value: 0.5 },
         bass: { value: 0.5 },
         mids: { value: 0.5 },
         highs: { value: 0.5 },
+        modPos: { value: new Vec2(this.props.modX, this.props.modY) }
       },
     });
 
@@ -68,22 +62,17 @@ class Visualizer extends Component {
     this.mesh.setParent(this.scene);
   }
 
-  addEventListeners() {
-    window.addEventListener('resize', this.resize.bind(this), false);
-
+  changeFragment() {
+    this.scene.removeChild(this.mesh);
+    this.setState({
+      fragment: this.state.fragment < this.fragments.length - 1 ? this.state.fragment + 1 : 0
+    })
+    this.createTriangle();
   }
 
-  changeFragment() {
-    this.program = new Program(this.gl, {
-      vertex: vertex,
-      fragment: this.fragments[this.state.fragment],
-      uniforms: {
-        uTime: { value: 0 },
-        bass: { value: 0.5 },
-        mids: { value: 0.5 },
-        highs: { value: 0.5 },
-      },
-    });
+  addResizeEventListener() {
+    window.addEventListener('resize', this.resize.bind(this), false);
+
   }
 
   resize() {
@@ -109,11 +98,15 @@ class Visualizer extends Component {
     for (let i = lowerBin; i <= upperBin; i++) {
       sum += this.buffer[i];
     }
+    let value = Math.abs(20 / sum) / binCount;
+    // value = value * 10;
+    value = Math.pow(value, 4);
+    value = Number(value.toFixed(5))
+    if (value > 2) {
+      console.warn('too big');
+    }
 
-    const averageValue = sum / binCount;
-    const normalizedValue = Math.abs(averageValue) / 100;
-
-    return normalizedValue;
+    return value;
   }
 
   animate(t) {
@@ -125,16 +118,14 @@ class Visualizer extends Component {
       this.updateAudioBuffer();
       //todo make it a "medelvärde" of 5 latest values - also calculate f where (value(x) = fx)
       const bass = this.getAudioBinValue(20, 250);
-      const mids = this.getAudioBinValue(500, 2000);
-      const highs = this.getAudioBinValue(2000, 6000);
+      // const mids = this.getAudioBinValue(500, 2000);
+      // const highs = this.getAudioBinValue(2000, 6000);
 
-      this.program.uniforms.bass.value = bass;
-      this.program.uniforms.mids.value = mids;
-      this.program.uniforms.highs.value = highs;
+      this.program.uniforms.bassCurrent.value = bass;
+      this.program.uniforms.bass.value = this.program.uniforms.bass.value * 0.9 + bass * 0.1; //slowly changes
+      // this.program.uniforms.mids.value = mids;
+      // this.program.uniforms.highs.value = highs;
 
-
-      //temp logging
-      // console.log({ bass, mids, highs })
     }
 
     this.renderer.render({ scene: this.mesh });
@@ -144,14 +135,17 @@ class Visualizer extends Component {
   render() {
     return (
       <>
-        <canvas onClick={() => this.setState({
-          fragment: this.state.fragment < this.fragments.length - 1 ? this.state.fragment + 1 : 0
-        })}
+        <canvas onClick={this.changeFragment.bind(this)}
           className="visualizer" ref={this.canvasRef} />
       </>
     );
   }
 }
 
+Visualizer.propTypes = {
+  modX: PropTypes.number,
+  modY: PropTypes.number,
+  analyserNodeRef: PropTypes.object,
+};
 
 export default Visualizer;
