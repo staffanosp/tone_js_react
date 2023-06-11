@@ -6,6 +6,8 @@ import { Renderer, Camera, Transform, Program, Mesh, Triangle, Vec2 } from 'ogl'
 import vertex from './shaders/vertex.glsl'
 import fragment from './shaders/fragment.glsl'
 import fragment2 from './shaders/fragment2.glsl'
+import fragment3 from './shaders/fragment3.glsl'
+import fragment4 from './shaders/fragment4.glsl'
 
 class Visualizer extends Component {
   constructor(props) {
@@ -14,7 +16,7 @@ class Visualizer extends Component {
     this.canvasRef = createRef();
     this.positionVector = new Vec2(props.modX, props.modY);
     this.analyserNodeRef = props.analyserNodeRef;
-    this.fragments = [fragment, fragment2];
+    this.fragments = [fragment2, fragment];
     this.state = {
       fragment: 0
     }
@@ -50,10 +52,7 @@ class Visualizer extends Component {
       fragment: this.fragments[this.state.fragment],
       uniforms: {
         uTime: { value: 0 },
-        bassCurrent: { value: 0.5 },
         bass: { value: 0.5 },
-        mids: { value: 0.5 },
-        highs: { value: 0.5 },
         modPos: { value: new Vec2(this.props.modX, this.props.modY) }
       },
     });
@@ -98,10 +97,9 @@ class Visualizer extends Component {
     for (let i = lowerBin; i <= upperBin; i++) {
       sum += this.buffer[i];
     }
-    let value = Math.abs(20 / sum) / binCount;
-    // value = value * 10;
+    let value = Math.abs(10 / sum) / binCount;
     value = Math.pow(value, 4);
-    value = Number(value.toFixed(5))
+    value = Number(value.toFixed(3))
     if (value > 2) {
       console.warn('too big');
     }
@@ -116,15 +114,11 @@ class Visualizer extends Component {
     if (this.analyserNodeRef.current !== undefined) {
 
       this.updateAudioBuffer();
-      //todo make it a "medelvärde" of 5 latest values - also calculate f where (value(x) = fx)
       const bass = this.getAudioBinValue(20, 250);
-      // const mids = this.getAudioBinValue(500, 2000);
-      // const highs = this.getAudioBinValue(2000, 6000);
+      console.log({ bass })
 
-      this.program.uniforms.bassCurrent.value = bass;
-      this.program.uniforms.bass.value = this.program.uniforms.bass.value * 0.9 + bass * 0.1; //slowly changes
-      // this.program.uniforms.mids.value = mids;
-      // this.program.uniforms.highs.value = highs;
+      this.program.uniforms.bass.value = this.program.uniforms.bass.value * 0.95 + bass * 0.01; //slowly changes
+
 
     }
 
