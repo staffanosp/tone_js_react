@@ -1,0 +1,15 @@
+.container {
+	position: absolute;
+	bottom: -10rem;
+	right: -5rem;
+  }
+  
+  
+  .webcam {
+	width: 30%;
+	height: 30%;
+	transform: rotateY(180deg);
+	-webkit-transform: rotateY(180deg); /* Safari and Chrome */
+	-moz-transform: rotateY(180deg);
+	border-radius: 10px;
+  }

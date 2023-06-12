@@ -31,6 +31,7 @@ const rsmul = (x, a) => {
 const curvefit3 = (x, min, middle, max) =>
   lerp(rsmul(x, (middle - min) / (max - min)), min, max);
 
+
 export {
   lerp,
   clamp,

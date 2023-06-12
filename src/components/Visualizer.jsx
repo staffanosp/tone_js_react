@@ -1,69 +1,157 @@
-import { useEffect, useRef } from "react";
+import { Component, createRef } from "react";
+import PropTypes from "prop-types";
 
-//the "type" of analyser is set in audioEngine.js:
-//const analyserNode = new Tone.Analyser("fft");
+import {
+  Renderer,
+  Camera,
+  Transform,
+  Program,
+  Mesh,
+  Triangle,
+  Vec2,
+} from "ogl";
 
-//the smoothing is in the same file:
-//nalyserNode.smoothing = 0;
+import vertex from "./shaders/vertex.glsl";
+import fragment from "./shaders/fragment.glsl";
+import fragment2 from "./shaders/fragment2.glsl";
+import fragment3 from "./shaders/fragment3.glsl";
+import fragment4 from "./shaders/fragment4.glsl";
+import liqFrag1 from "./shaders/liqFrag1.glsl";
 
-//It should really not use this interval thing — it was just to get some logging thing to be done.
-//Make a proper frame loop :)
+class Visualizer extends Component {
+  constructor(props) {
+    super(props);
+    console.log(this.props);
+    this.canvasRef = createRef();
+    this.positionVector = new Vec2(props.modX, props.modY);
+    this.analyserNodeRef = props.analyserNodeRef;
+    this.fragments = [liqFrag1, fragment];
+    this.state = {
+      fragment: 0,
+    };
+  }
 
-function Visualizer({ analyserNodeRef }) {
-  const canvasRef = useRef();
+  componentDidMount() {
+    this.init();
+    this.createTriangle();
+    this.resize();
+    this.addResizeEventListener();
+    this.animate();
+  }
 
-  useEffect(() => {
-    let requestAnimationFrameRef;
+  componentDidUpdate() {
+    this.program.uniforms.modPos.value.set(this.props.modX, this.props.modY);
+  }
 
-    const canvas = canvasRef.current;
-    const canvasCtx = canvas.getContext("2d");
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+  init() {
+    this.renderer = new Renderer({ canvas: this.canvasRef.current });
+    this.gl = this.renderer.gl;
 
-    function draw() {
-      //Schedule next redraw
-      requestAnimationFrameRef = requestAnimationFrame(draw);
+    this.camera = new Camera(this.gl);
+    this.camera.position.z = 5;
 
-      console.log("FRAME");
+    this.scene = new Transform();
+  }
 
-      const buffer = analyserNodeRef.current?.getValue();
-      const bufferSize = analyserNodeRef.current?.size;
+  createTriangle() {
+    this.geometry = new Triangle(this.gl);
 
-      if (!buffer) return; //there is no buffer before the audio engine is created
+    this.program = new Program(this.gl, {
+      vertex: vertex,
+      fragment: this.fragments[this.state.fragment],
+      uniforms: {
+        uTime: { value: 0 },
+        bass: { value: 0.5 },
+        modPos: { value: new Vec2(this.props.modX, this.props.modY) },
+      },
+    });
 
-      //Draw black background
-      canvasCtx.fillStyle = "rgb(0, 0, 0)";
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+    this.mesh = new Mesh(this.gl, {
+      geometry: this.geometry,
+      program: this.program,
+    });
+    this.mesh.setParent(this.scene);
+  }
 
-      //Draw spectrum
-      const barWidth = (canvas.width / bufferSize) * 2.5;
-      let posX = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        const barHeight = (buffer[i] + 140) * 2;
-        canvasCtx.fillStyle =
-          "rgb(" + Math.floor(barHeight + 100) + ", 50, 50)";
-        canvasCtx.fillRect(
-          posX,
-          canvas.height - barHeight / 2,
-          barWidth,
-          barHeight / 2
-        );
-        posX += barWidth + 1;
-      }
+  changeFragment() {
+    this.scene.removeChild(this.mesh);
+    this.setState({
+      fragment:
+        this.state.fragment < this.fragments.length - 1
+          ? this.state.fragment + 1
+          : 0,
+    });
+    this.createTriangle();
+  }
+
+  addResizeEventListener() {
+    window.addEventListener("resize", this.resize.bind(this), false);
+  }
+
+  resize() {
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.camera.perspective({
+      aspect: this.gl.canvas.width / this.gl.canvas.height,
+    });
+  }
+
+  updateAudioBuffer() {
+    this.buffer = this.analyserNodeRef.current?.getValue();
+    this.bufferSize = this.analyserNodeRef.current?.size;
+    this.sampleRate = 1 / this.analyserNodeRef.current?.sampleTime;
+  }
+
+  getAudioBinValue(lower, upper) {
+    let sum = 0;
+    const lowerBin = Math.floor(lower / (this.sampleRate / this.bufferSize));
+    const upperBin = Math.floor(upper / (this.sampleRate / this.bufferSize));
+    const binCount = upperBin - lowerBin + 1;
+
+    for (let i = lowerBin; i <= upperBin; i++) {
+      sum += this.buffer[i];
+    }
+    let value = Math.abs(10 / sum) / binCount;
+    value = Math.pow(value, 4);
+    value = Number(value.toFixed(3));
+    if (value > 2) {
+      console.warn("too big");
     }
 
-    draw();
+    return value;
+  }
 
-    return () => {
-      //clean up
-      cancelAnimationFrame(requestAnimationFrameRef);
-    };
-  }, []);
+  animate(t) {
+    requestAnimationFrame(this.animate.bind(this)); //We use bind(this) so that the context of 'this' doesn't get lost
 
-  return (
-    <div>
-      <canvas ref={canvasRef} />
-    </div>
-  );
+    this.program.uniforms.uTime.value = t * 0.001;
+    if (this.analyserNodeRef.current !== undefined) {
+      this.updateAudioBuffer();
+      const bass = this.getAudioBinValue(20, 250);
+
+      this.program.uniforms.bass.value =
+        this.program.uniforms.bass.value * 0.95 + bass * 0.9; //slowly changes
+    }
+
+    this.renderer.render({ scene: this.mesh });
+  }
+
+  render() {
+    return (
+      <>
+        <canvas
+          onClick={this.changeFragment.bind(this)}
+          className="visualizer"
+          ref={this.canvasRef}
+        />
+      </>
+    );
+  }
 }
+
+Visualizer.propTypes = {
+  modX: PropTypes.number,
+  modY: PropTypes.number,
+  analyserNodeRef: PropTypes.object,
+};
 
 export default Visualizer;

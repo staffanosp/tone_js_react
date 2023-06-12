@@ -12,6 +12,11 @@ function UserControls({
   drumsIsPlaying,
   setDrumsIsPlaying,
   setBpm,
+
+  bpm,
+  isTrackingPose,
+  setIsTrackingPose,
+
 }) {
   return (
     <div className="center">
@@ -95,6 +100,13 @@ function UserControls({
           </div>
         </div>
       </div>
+      <button
+        onClick={() => {
+          setIsTrackingPose(!isTrackingPose);
+        }}
+      >
+        {isTrackingPose ? "POSE: Stop" : "POSE: Start"}
+      </button>
     </div>
   );
 }

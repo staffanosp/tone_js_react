@@ -51,7 +51,11 @@ function createAudioEngine(numOscillators = 5) {
 
   // create other nodes
   const oscillatorsSumGainNode = new Tone.Gain(1);
-  const delayNode = new Tone.PingPongDelay("16n", 0.5);
+
+  const preDelayGainNode = new Tone.Gain(1);
+  const preDelayFilterNode = new Tone.Filter(400, "highpass");
+  const delayNode = new Tone.PingPongDelay("8n.", 0.4);
+
   const filterNode = new Tone.Filter(10000, "lowpass");
   filterNode.Q.value = 1;
 
@@ -72,6 +76,7 @@ function createAudioEngine(numOscillators = 5) {
   const masterVolumeNode = new Tone.Volume(-Infinity);
 
   const analyserNode = new Tone.Analyser("fft");
+  analyserNode.size = 32;
   // analyserNode.smoothing = 0;
 
   //connections
@@ -83,7 +88,11 @@ function createAudioEngine(numOscillators = 5) {
     );
   });
 
-  oscillatorsSumGainNode.connect(delayNode);
+  oscillatorsSumGainNode.fan(filterNode, preDelayGainNode);
+
+  preDelayGainNode.connect(preDelayFilterNode);
+
+  preDelayFilterNode.connect(delayNode);
   delayNode.connect(filterNode);
 
   filterNode.connect(sidechainGainNode);
@@ -125,7 +134,7 @@ function createAudioEngine(numOscillators = 5) {
     let currentPattern = patterns[currentDrumPattern % patterns.length];
     const beatIndex = Math.floor(time / sixteenthNote) % 16;
 
-    console.log(sixteenthNote);
+    // console.log(sixteenthNote);
 
     const kickStep = currentPattern.kickPattern[beatIndex];
     const snareStep = currentPattern.snarePattern[beatIndex];
@@ -150,14 +159,17 @@ function createAudioEngine(numOscillators = 5) {
   let loopIsStarted = false;
 
   return {
+    isInitialized: false,
     //References to nodes, can be nodes, arrays of nodes or objects with nodes as values
     nodes: {
       oscillatorNodes,
       oscillatorGainNodes,
       oscillatorsSumGainNode,
-      filterNode,
       panners,
+      preDelayGainNode,
+      preDelayFilterNode,
       delayNode,
+      filterNode,
       //sidechain stuff
       sidechainGainNode,
       sidechainEnvelopeNode,
@@ -180,7 +192,13 @@ function createAudioEngine(numOscillators = 5) {
     changeDrumPattern,
 
     async init() {
-      console.log("start");
+      console.log("init");
+      if (this.isInitialized) {
+        console.log("already initialized");
+        return;
+      }
+
+      this.isInitialized = true;
 
       //start Tone
       await Tone.start();
@@ -222,7 +240,7 @@ function createAudioEngine(numOscillators = 5) {
     },
 
     setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {
-      console.log("setOscillatorGainsFromNormalizedValue");
+      // console.log("setOscillatorGainsFromNormalizedValue");
 
       const gains = []; //this is just to be able to return the gains, mostly for debug purposes
 
@@ -257,9 +275,9 @@ function createAudioEngine(numOscillators = 5) {
     },
 
     setFilterFreqFromNormalizedValue(v, rampTime = 0.1) {
-      const min = 400;
+      const min = 800;
       const middle = 1000;
-      const max = 10000;
+      const max = 12000;
 
       const freq = curvefit3(v, min, middle, max);
 
@@ -271,7 +289,7 @@ function createAudioEngine(numOscillators = 5) {
 
       const rndDetuneRange = 10;
 
-      console.log("setChord");
+      // console.log("setChord");
 
       for (const [i, note] of chord.entries()) {
         if (i > this.numOscillators - 1) break;
