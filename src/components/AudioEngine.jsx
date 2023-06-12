@@ -10,12 +10,15 @@ function AudioEngine({
   modY,
   analyserNodeRef,
   rndChordSetTrig,
+  audioEngineDrumsSetTrig,
+  drumsIsPlaying,
+  bpm,
 }) {
-  const [drumsIsPlaying, setDrumsIsPlaying] = useState(false);
-
   const [oscGains, setOscGains] = useState([]);
 
   const audioEngineRef = useRef();
+
+  let isDebug = false;
 
   //create the audio engine on mount
   useEffect(() => {
@@ -59,10 +62,16 @@ function AudioEngine({
 
   useEffect(() => {
     if (rndChordSetTrig) {
-      changeChordSet();
+      changeChordSet(rndChordSetTrig);
       audioEngineRef.current.setChord(getChord(modX), 0.2);
     }
   }, [rndChordSetTrig]);
+
+  useEffect(() => {
+    if (audioEngineDrumsSetTrig) {
+      audioEngineRef.current.changeDrumPattern(audioEngineDrumsSetTrig);
+    }
+  }, [audioEngineDrumsSetTrig]);
 
   //"Modulation"
   useEffect(() => {
@@ -79,37 +88,42 @@ function AudioEngine({
     }
   }, [modX, modY]);
 
-  const handleClickDrums = () => {
-    setDrumsIsPlaying(!drumsIsPlaying);
+  useEffect(() => {
     audioEngineRef.current.startLoop();
-  };
+  }, [drumsIsPlaying]);
 
   const handleRandomDrumsClick = () => {
     audioEngineRef.current.getRandomPatternIndex();
   };
 
-  return (
-    <div style={{ outline: "#555 solid 1px", padding: "24px" }}>
-      <div>
-        <strong>AUDIO ENGINE DEBUG STUFF.</strong> The Audio Engine component
-        should <strong>not</strong> have any dom elements. This is just dev
-        stuff.
+  useEffect(() => {
+    if (bpm) {
+      audioEngineRef.current.setBpmValue(bpm);
+    }
+  }, [bpm]);
+
+  if (!isDebug) {
+    return;
+  } else {
+    return (
+      <div style={{ outline: "#555 solid 1px", padding: "24px" }}>
+        <div>
+          <strong>AUDIO ENGINE DEBUG STUFF.</strong> The Audio Engine component
+          should <strong>not</strong> have any dom elements. This is just dev
+          stuff.
+        </div>
+        <p>X:{modX}</p>
+        <p>Y:{modY}</p>
+        <div className="oscDebugContainer">
+          {oscGains.map((v) => (
+            <div className="oscDebugContainer--item">
+              {Math.round(v * 100) / 100}
+            </div>
+          ))}
+        </div>
       </div>
-      <p>X:{modX}</p>
-      <p>Y:{modY}</p>
-      <div className="oscDebugContainer">
-        {oscGains.map((v) => (
-          <div className="oscDebugContainer--item">
-            {Math.round(v * 100) / 100}
-          </div>
-        ))}
-      </div>
-      <button onClick={handleClickDrums}>
-        {!drumsIsPlaying ? "Drums START" : "Drums: STOP"}
-      </button>
-      <button onClick={handleRandomDrumsClick}>Pattern: RANDOM</button>
-    </div>
-  );
+    );
+  }
 }
 
 export default AudioEngine;
