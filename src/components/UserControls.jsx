@@ -13,6 +13,8 @@ function UserControls({
   setDrumsIsPlaying,
   setBpm,
   bpm,
+  isTrackingPose,
+  setIsTrackingPose,
 }) {
   return (
     <div style={{ outline: "#555 solid 1px", padding: "24px", margin: "24px" }}>
@@ -87,6 +89,13 @@ function UserControls({
           );
         })}
       </div>
+      <button
+        onClick={() => {
+          setIsTrackingPose(!isTrackingPose);
+        }}
+      >
+        {isTrackingPose ? "POSE: Stop" : "POSE: Start"}
+      </button>
     </div>
   );
 }
