@@ -5,7 +5,9 @@ import Visualizer from "./components/Visualizer";
 import UserControls from "./components/UserControls";
 import PoseNet from "./components/PoseNet";
 
+import bidenSound from "../public/sounds/world-of-sound.mp3";
 import "./App.css";
+import StartScreen from "./components/StartScreen";
 
 function App() {
   const [showStartScreen, setShowStartScreen] = useState(true);
@@ -53,23 +55,25 @@ function App() {
 
   const handleClickStart = () => {
     setAudioEngineInitTrig((old) => ++old); //Initializes/starts the audio after user interaction
-
+    var audio = new Audio(bidenSound);
+    audio.play();
     setShowStartScreen(false);
   };
 
-  //The start screen
-  if (showStartScreen) {
-    return (
-      <>
-        <div>WELCOME.. BLAH BLAAH BLAAAH</div>
-        <button onClick={handleClickStart}>Start</button>
-      </>
-    );
-  }
+  // //The start screen
+  // if (showStartScreen) {
+  //   return (
+  //     <>
+  //       <h1>Welcome to The World of Sound</h1>
+  //       <button onClick={handleClickStart}>Start</button>
+  //     </>
+  //   );
+  // }
 
   //The actual app
   return (
     <>
+      <StartScreen handleClickStart={handleClickStart} showStartScreen={showStartScreen} />
       <UserControls
         {...{
           audioEngineIsPlaying,

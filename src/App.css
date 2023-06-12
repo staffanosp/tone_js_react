@@ -58,6 +58,18 @@ canvas.visualizer {
   z-index: -1;
 }
 
+.start-screen {
+  box-sizing: border-box;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  backdrop-filter: blur(30px);
+  transition: opacity 1s;
+  padding-top: 30vh;
+}
+
 /* temp css */
 .oscDebugContainer {
   display: flex;
