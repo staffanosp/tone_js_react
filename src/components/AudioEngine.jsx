@@ -9,8 +9,8 @@ function AudioEngine({
   modX,
   modY,
   analyserNodeRef,
-  rndChordSetTrig,
-  audioEngineDrumsSetTrig,
+  audioEngineChordSetIndex,
+  audioEngineDrumsSetIndex,
   drumsIsPlaying,
   bpm,
 }) {
@@ -61,17 +61,13 @@ function AudioEngine({
   //Handle Random Chord Set Trig
 
   useEffect(() => {
-    if (rndChordSetTrig) {
-      changeChordSet(rndChordSetTrig);
-      audioEngineRef.current.setChord(getChord(modX), 0.2);
-    }
-  }, [rndChordSetTrig]);
+    changeChordSet(audioEngineChordSetIndex);
+    audioEngineRef.current.setChord(getChord(modX), 0.2);
+  }, [audioEngineChordSetIndex]);
 
   useEffect(() => {
-    if (audioEngineDrumsSetTrig) {
-      audioEngineRef.current.changeDrumPattern(audioEngineDrumsSetTrig);
-    }
-  }, [audioEngineDrumsSetTrig]);
+    audioEngineRef.current.changeDrumPattern(audioEngineDrumsSetIndex);
+  }, [audioEngineDrumsSetIndex]);
 
   //"Modulation"
   useEffect(() => {
@@ -91,10 +87,6 @@ function AudioEngine({
   useEffect(() => {
     audioEngineRef.current.startLoop();
   }, [drumsIsPlaying]);
-
-  const handleRandomDrumsClick = () => {
-    audioEngineRef.current.getRandomPatternIndex();
-  };
 
   useEffect(() => {
     if (bpm) {

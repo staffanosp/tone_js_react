@@ -12,9 +12,11 @@ function App() {
 
   //user controls
   const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
-  const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(true);
-  const [audioEngineChordSetTrig, setAudioEngineChordSetTrig] = useState(0);
-  const [audioEngineDrumsSetTrig, setAudioEngineDrumsSetTrig] = useState(0);
+
+  const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(false);
+  const [audioEngineChordSetIndex, setAudioEngineChordSetIndex] = useState(0);
+  const [audioEngineDrumsSetIndex, setAudioEngineDrumsSetIndex] = useState(0);
+
   const [drumsIsPlaying, setDrumsIsPlaying] = useState(false);
 
   const [isTrackingPose, setIsTrackingPose] = useState(false);
@@ -70,30 +72,18 @@ function App() {
   //The actual app
   return (
     <>
-      <UserControls
-        {...{
-          audioEngineIsPlaying,
-          setAudioEngineIsIsPlaying,
-          setAudioEngineChordSetTrig,
-          audioEngineChordSetTrig,
-          setAudioEngineDrumsSetTrig,
-          audioEngineDrumsSetTrig,
-          drumsIsPlaying,
-          setDrumsIsPlaying,
-          bpm,
-          setBpm,
-          isTrackingPose,
-          setIsTrackingPose,
-        }}
-      />
+      <Visualizer analyserNodeRef={analyserNodeRef} />
+
+ 
       <Visualizer
         analyserNodeRef={analyserNodeRef}
         modX={audioModX}
         modY={audioModY}
       />
+
       <AudioEngine
-        rndChordSetTrig={audioEngineChordSetTrig}
-        audioEngineDrumsSetTrig={audioEngineDrumsSetTrig}
+        audioEngineChordSetIndex={audioEngineChordSetIndex}
+        audioEngineDrumsSetIndex={audioEngineDrumsSetIndex}
         initTrig={audioEngineInitTrig}
         isPlaying={audioEngineIsPlaying}
         drumsIsPlaying={drumsIsPlaying}
@@ -102,10 +92,36 @@ function App() {
         analyserNodeRef={analyserNodeRef}
         bpm={bpm}
       />
+
+
+      <div>
+        <button
+          onClick={() => {
+            setIsTrackingMouse((old) => !old);
+          }}
+        >
+          {isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
+        </button>
+      </div>
+      <UserControls
+        {...{
+          audioEngineIsPlaying,
+          setAudioEngineIsIsPlaying,
+          setAudioEngineChordSetIndex,
+          audioEngineChordSetIndex,
+          setAudioEngineDrumsSetIndex,
+          audioEngineDrumsSetIndex,
+          drumsIsPlaying,
+          setDrumsIsPlaying,
+          bpm,
+          setBpm,
+        }}
+
       <PoseNet
         isTrackingPose={isTrackingPose}
         setModX={setAudioModX}
         setModY={setAudioModY}
+
       />
     </>
   );

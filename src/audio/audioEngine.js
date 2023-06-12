@@ -131,7 +131,7 @@ function createAudioEngine(numOscillators = 5) {
 
   const loopCallback = (time) => {
     const sixteenthNote = Tone.Time("16n").toSeconds();
-    const currentPattern = patterns[currentDrumPattern];
+    let currentPattern = patterns[currentDrumPattern % patterns.length];
     const beatIndex = Math.floor(time / sixteenthNote) % 16;
 
     // console.log(sixteenthNote);
