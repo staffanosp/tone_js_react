@@ -81,13 +81,23 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 
 	return (
 		<>
-			<video className={styles.webcam} ref={webcamRef} autoPlay />
-			{/* if there isnt enough data let the user know */}
-			<p>
-				{notEnoughData && isTrackingPose
-					? "can't get a good enough look on the pose, move back"
-					: ""}
-			</p>
+			<main className={styles.container}>
+				<div>
+					<video
+						// className={`${styles.webcam} ${
+						// 	isTrackingPose ? styles.active : styles.inactive
+						// }`}
+						className={styles.webcam}
+						ref={webcamRef}
+						autoPlay
+					/>
+					<p>
+						{notEnoughData && isTrackingPose
+							? "can't get a good enough look on the pose, move back"
+							: ""}
+					</p>
+				</div>
+			</main>
 		</>
 	);
 }
