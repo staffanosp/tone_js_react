@@ -6,7 +6,9 @@
 }
 
 body {
-  /* background-color: blueviolet; */
+  max-height: 100vh;
+  overflow: hidden;
+}
 }
 
 .center {
