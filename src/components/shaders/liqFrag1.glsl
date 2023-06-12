@@ -3,9 +3,6 @@ precision highp float;
 uniform float uTime;
 uniform float bass;
 uniform vec2 modPos;
-uniform float bassCurrent;
-uniform float mids;
-uniform float highs;
 
 varying vec2 vUv;
 
@@ -45,7 +42,7 @@ void main(void) {
 
     //Mids = 0.0 because theres not mids uniform lol
     // vec3 hsv1 = vec3(hue * mids, 0.9, 0.85);
-    vec3 hsv2 = vec3(hue + mids, 0.85, 0.75);
+    vec3 hsv2 = vec3(hue, 0.85, 0.75);
 
     // vec3 rgb1 = hsv2rgb(hsv1);
     vec3 rgb1 = vec3(0., 0., 0.);
@@ -53,7 +50,7 @@ void main(void) {
 
     vec4 color = vec4(mix(rgb1, rgb2, pattern - mouseDistance), 1.0);
     // color -= vec4(mouseDistance, mouseDistance, mouseDistance, 1.0);
-    // vec4 color = vec4(pattern) - 0.52;
 
     gl_FragColor = color;
+
 }

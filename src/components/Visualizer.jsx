@@ -127,7 +127,6 @@ class Visualizer extends Component {
     if (this.analyserNodeRef.current !== undefined) {
       this.updateAudioBuffer();
       const bass = this.getAudioBinValue(20, 250);
-      console.log({ bass });
 
       this.program.uniforms.bass.value =
         this.program.uniforms.bass.value * 0.95 + bass * 0.9; //slowly changes
