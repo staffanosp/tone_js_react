@@ -88,8 +88,6 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 	return (
 		<>
 			<main className={styles.container}>
-				<div>
-					<div className={styles.webcam_wrapper}>
 					<video
 						className={`${styles.webcam} ${
 							isTrackingPose ? styles.active : styles.inactive
@@ -97,13 +95,11 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 						ref={webcamRef}
 						autoPlay
 					/>
-					</div>
 					<p>
 						{notEnoughData && isTrackingPose
 							? "can't get a good enough look on the pose, move back"
 							: ""}
 					</p>
-				</div>
 			</main>
 		</>
 	);

@@ -66,11 +66,6 @@ function App() {
   //The actual app
   return (
     <>
-      <PoseNet
-        isTrackingPose={isTrackingPose}
-        setModX={setAudioModX}
-        setModY={setAudioModY}
-      />
       <UserControls
         {...{
           audioEngineIsPlaying,
@@ -88,6 +83,11 @@ function App() {
         modX={audioModX}
         modY={audioModY}
         analyserNodeRef={analyserNodeRef}
+      />
+      <PoseNet
+        isTrackingPose={isTrackingPose}
+        setModX={setAudioModX}
+        setModY={setAudioModY}
       />
     </>
   );
