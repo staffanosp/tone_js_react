@@ -52,8 +52,8 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 			let rightWrist = posesRef.current[0]?.["keypoints"][10];
 			let valueX = 1 - rightWrist.x / videoWidth;
 			let valueY = 1 - rightWrist.y / videoHeight;
-			let roundedX = valueX.toFixed(3);
-			let roundedY = valueY.toFixed(3);
+			let roundedX = Math.round(valueX * 100) / 100;
+			let roundedY = Math.round(valueY * 100) / 100;
 
 			if (rightWrist && rightWrist.score > 0.4 && roundedX < 1 && roundedY < 1) {
 				setModX(roundedX);
