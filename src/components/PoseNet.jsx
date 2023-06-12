@@ -13,6 +13,7 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 	const posesRef = useRef(null);
 	const intervalRef = useRef(null);
 
+
 	//states
 	const [notEnoughData, setNotEnoughData] = useState(true);
 
@@ -33,13 +34,18 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 
 	// create poses to get x-y value
 	const estimatePose = async () => {
-		if (detectorRef.current && webcamRef.current) {
+	if (detectorRef.current && webcamRef.current) {
+
 			const videoElm = webcamRef.current;
 			posesRef.current = await detectorRef.current.estimatePoses(videoElm);
+			
+			const { videoWidth, videoHeight } = videoElm;
+
+			console.log(videoWidth, videoHeight)
 
 			let rightWrist = posesRef.current[0]?.["keypoints"][10];
-			let valueX = 1 - rightWrist.x / webcamRef.current.clientWidth;
-			let valueY = 1 - rightWrist.y / webcamRef.current.clientHeight;
+			let valueX = 1 - rightWrist.x / videoWidth
+			let valueY = 1 - rightWrist.y / videoHeight;
 			let roundedX = valueX.toFixed(3);
 			let roundedY = valueY.toFixed(3);
 
@@ -83,14 +89,15 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 		<>
 			<main className={styles.container}>
 				<div>
+					<div className={styles.webcam_wrapper}>
 					<video
-						// className={`${styles.webcam} ${
-						// 	isTrackingPose ? styles.active : styles.inactive
-						// }`}
-						className={styles.webcam}
+						className={`${styles.webcam} ${
+							isTrackingPose ? styles.active : styles.inactive
+						}`}
 						ref={webcamRef}
 						autoPlay
 					/>
+					</div>
 					<p>
 						{notEnoughData && isTrackingPose
 							? "can't get a good enough look on the pose, move back"
