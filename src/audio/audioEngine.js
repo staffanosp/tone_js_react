@@ -49,7 +49,11 @@ function createAudioEngine(numOscillators = 5) {
 
   // create other nodes
   const oscillatorsSumGainNode = new Tone.Gain(1);
-  const delayNode = new Tone.PingPongDelay("16n", 0.5);
+
+  const preDelayGainNode = new Tone.Gain(1);
+  const preDelayFilterNode = new Tone.Filter(400, "highpass");
+  const delayNode = new Tone.PingPongDelay("8n.", 0.4);
+
   const filterNode = new Tone.Filter(10000, "lowpass");
   filterNode.Q.value = 1;
 
@@ -81,7 +85,11 @@ function createAudioEngine(numOscillators = 5) {
     );
   });
 
-  oscillatorsSumGainNode.connect(delayNode);
+  oscillatorsSumGainNode.fan(filterNode, preDelayGainNode);
+
+  preDelayGainNode.connect(preDelayFilterNode);
+
+  preDelayFilterNode.connect(delayNode);
   delayNode.connect(filterNode);
 
   filterNode.connect(sidechainGainNode);
@@ -190,9 +198,11 @@ function createAudioEngine(numOscillators = 5) {
       oscillatorNodes,
       oscillatorGainNodes,
       oscillatorsSumGainNode,
-      filterNode,
       panners,
+      preDelayGainNode,
+      preDelayFilterNode,
       delayNode,
+      filterNode,
       //sidechain stuff
       sidechainGainNode,
       sidechainEnvelopeNode,
