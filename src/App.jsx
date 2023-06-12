@@ -60,20 +60,6 @@ function App() {
   //The actual app
   return (
     <>
-      <UserControls
-        {...{
-          audioEngineIsPlaying,
-          setAudioEngineIsIsPlaying,
-          setAudioEngineChordSetTrig,
-          audioEngineChordSetTrig,
-          setAudioEngineDrumsSetTrig,
-          audioEngineDrumsSetTrig,
-          drumsIsPlaying,
-          setDrumsIsPlaying,
-          bpm,
-          setBpm,
-        }}
-      />
       <Visualizer analyserNodeRef={analyserNodeRef} />
       <AudioEngine
         rndChordSetTrig={audioEngineChordSetTrig}
@@ -96,6 +82,20 @@ function App() {
           {isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
         </button>
       </div>
+      <UserControls
+        {...{
+          audioEngineIsPlaying,
+          setAudioEngineIsIsPlaying,
+          setAudioEngineChordSetTrig,
+          audioEngineChordSetTrig,
+          setAudioEngineDrumsSetTrig,
+          audioEngineDrumsSetTrig,
+          drumsIsPlaying,
+          setDrumsIsPlaying,
+          bpm,
+          setBpm,
+        }}
+      />
     </>
   );
 }

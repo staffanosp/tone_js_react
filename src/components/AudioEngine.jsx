@@ -92,10 +92,6 @@ function AudioEngine({
     audioEngineRef.current.startLoop();
   }, [drumsIsPlaying]);
 
-  const handleRandomDrumsClick = () => {
-    audioEngineRef.current.getRandomPatternIndex();
-  };
-
   useEffect(() => {
     if (bpm) {
       audioEngineRef.current.setBpmValue(bpm);

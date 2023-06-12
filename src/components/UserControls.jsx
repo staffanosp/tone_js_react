@@ -12,80 +12,89 @@ function UserControls({
   drumsIsPlaying,
   setDrumsIsPlaying,
   setBpm,
-  bpm,
 }) {
+  console.log(audioEngineDrumsSetTrig);
   return (
-    <div style={{ outline: "#555 solid 1px", padding: "24px", margin: "24px" }}>
-      <div>
-        <strong>USER CONTROLS.</strong> TO KEEP! This is where ALL user controls
-        should go. This should be some sort of floating panel.
-      </div>
-
-      <button
-        onClick={() => {
-          setAudioEngineIsIsPlaying(!audioEngineIsPlaying);
-        }}
-      >
-        {!audioEngineIsPlaying ? "PLAY" : "PAUSE"}
-      </button>
-      <div className="chordSetPickerContainer">
-        <button
-          onClick={() => {
-            if (audioEngineChordSetTrig > 0) {
-              setAudioEngineChordSetTrig((old) => --old);
-            }
-          }}
-        >
-          -
-        </button>
-        <div>Chord Set: {audioEngineChordSetTrig + 1}</div>
-        <button
-          onClick={() => {
-            if (audioEngineChordSetTrig < chordSets.length - 1) {
-              setAudioEngineChordSetTrig((old) => ++old);
-            }
-          }}
-        >
-          +
-        </button>
-      </div>
-      <div className="chordSetPickerContainer">
-        <button
-          onClick={() => {
-            if (audioEngineDrumsSetTrig > 0) {
-              setAudioEngineDrumsSetTrig((old) => --old);
-            }
-          }}
-        >
-          -
-        </button>
-
-        <div>Beat Set: {audioEngineDrumsSetTrig}</div>
-        <button
-          onClick={() => {
-            if (audioEngineDrumsSetTrig < patterns.length - 1) {
-              setAudioEngineDrumsSetTrig((old) => ++old);
-            }
-          }}
-        >
-          +
-        </button>
-        <button
-          onClick={() => {
-            setDrumsIsPlaying(!drumsIsPlaying);
-          }}
-        >
-          {!drumsIsPlaying ? "Drums: PLAY" : "Drums: PAUSE"}
-        </button>
-      </div>
-      <div className="chordSetPickerContainer">
-        {bpmList.map((item) => {
-          return (
-            <button key={item.id} onClick={() => setBpm(item.value)}>
-              {item.label}
+    <div className="center">
+      <div className="userControlContainer">
+        <div className="btnSetContainer">
+          <div>Synth</div>
+          <button
+            onClick={() => {
+              setAudioEngineIsIsPlaying(!audioEngineIsPlaying);
+            }}
+          >
+            {!audioEngineIsPlaying ? "PLAY" : "PAUSE"}
+          </button>
+        </div>
+        <div className="btnSetContainer">
+          <div>Tempo:</div>
+          <div className="btnContainer">
+            {bpmList.map((item) => {
+              return (
+                <button key={item.id} onClick={() => setBpm(item.value)}>
+                  {`${item.label} bpm`}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="btnSetContainer">
+          <div>Chords</div>
+          <div>Chord Set: {audioEngineChordSetTrig + 1}</div>
+          <div className="btnContainer">
+            <button
+              onClick={() => {
+                setAudioEngineChordSetTrig(
+                  (old) => (old - 1 + chordSets.length) % chordSets.length
+                );
+              }}
+            >
+              -
             </button>
-          );
-        })}
+            <button
+              onClick={() => {
+                setAudioEngineChordSetTrig(
+                  (old) => (old + 1) % chordSets.length
+                );
+              }}
+            >
+              +
+            </button>
+          </div>
+        </div>
+        <div className="btnSetContainer">
+          <div>Beat</div>
+          <button
+            onClick={() => {
+              setDrumsIsPlaying(!drumsIsPlaying);
+            }}
+          >
+            {!drumsIsPlaying ? "PLAY" : "PAUSE"}
+          </button>
+
+          <div>Pattern: {audioEngineDrumsSetTrig + 1}</div>
+          <div className="btnContainer">
+            <button
+              onClick={() => {
+                setAudioEngineDrumsSetTrig(
+                  (old) => (old - 1 + patterns.length) % patterns.length
+                );
+              }}
+            >
+              -
+            </button>
+            <button
+              onClick={() => {
+                setAudioEngineDrumsSetTrig(
+                  (old) => (old + 1) % patterns.length
+                );
+              }}
+            >
+              +
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
