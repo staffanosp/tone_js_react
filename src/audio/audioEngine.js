@@ -182,6 +182,7 @@ function createAudioEngine(numOscillators = 5) {
   let loopIsStarted = false;
 
   return {
+    isInitialized: false,
     //References to nodes, can be nodes, arrays of nodes or objects with nodes as values
     nodes: {
       oscillatorNodes,
@@ -212,7 +213,13 @@ function createAudioEngine(numOscillators = 5) {
     getRandomPatternIndex,
 
     async init() {
-      console.log("start");
+      console.log("init");
+      if (this.isInitialized) {
+        console.log("already initialized");
+        return;
+      }
+
+      this.isInitialized = true;
 
       //start Tone
       await Tone.start();
