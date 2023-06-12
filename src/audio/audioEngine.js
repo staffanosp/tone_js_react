@@ -1,6 +1,8 @@
 import * as Tone from "tone";
 import { clamp, curvefit3 } from "../utils/utils";
 
+import { patterns } from "./drums";
+
 import kickSample from "../../public/sounds/kick.wav";
 import snareSample from "../../public/sounds/snare.wav";
 
@@ -115,52 +117,15 @@ function createAudioEngine(numOscillators = 5) {
 
   //Loop
 
-  // const [currentPattern, setCurrentPattern] = useState(0);
-  const patterns = [
-    {
-      bpm: 120,
-      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-      snarePattern: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    },
-    {
-      bpm: 120,
-      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
-      snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    },
-
-    {
-      bpm: 135,
-      kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-      snarePattern: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-    },
-    {
-      bpm: 80,
-      kickPattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-      snarePattern: [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    },
-    {
-      bpm: 120,
-      kickPattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0],
-      snarePattern: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-    },
-    {
-      bpm: 100,
-      kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-      snarePattern: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0],
-    },
-  ];
-
   let currentDrumPattern = 0;
 
   // Set the BPM to 120
 
-  const getRandomPatternIndex = () => {
-    let newPatternIndex = null;
-    currentDrumPattern = Math.floor(Math.random() * patterns.length);
-    if (newPatternIndex === currentDrumPattern) {
-      return getRandomPatternIndex();
-    }
-    newPatternIndex = currentDrumPattern;
+  let currentBpm = 125; // Initial BPM
+  Tone.Transport.bpm.value = currentBpm;
+
+  const changeDrumPattern = (i) => {
+    currentDrumPattern = i;
   };
 
   const loopCallback = (time) => {
@@ -173,7 +138,7 @@ function createAudioEngine(numOscillators = 5) {
     const kickStep = currentPattern.kickPattern[beatIndex];
     const snareStep = currentPattern.snarePattern[beatIndex];
 
-    Tone.Transport.bpm.value = patterns[currentDrumPattern].bpm;
+    // Tone.Transport.bpm.value = patterns[currentDrumPattern].bpm;
 
     if (kickStep === 1) {
       kickPlayerNode.start(time);
@@ -222,7 +187,7 @@ function createAudioEngine(numOscillators = 5) {
 
     numOscillators,
     currentChord: [],
-    getRandomPatternIndex,
+    changeDrumPattern,
 
     async init() {
       console.log("start");
@@ -260,6 +225,10 @@ function createAudioEngine(numOscillators = 5) {
         loop.stop();
         loopIsStarted = !loopIsStarted;
       }
+    },
+
+    setBpmValue(value) {
+      Tone.Transport.bpm.value = value;
     },
 
     setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {

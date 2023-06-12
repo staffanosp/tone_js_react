@@ -10,8 +10,9 @@ function App() {
 
   const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
   const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(false);
-  const [audioEngineRndChordSetTrig, setAudioEngineRndChordSetTrig] =
-    useState(0);
+  const [audioEngineChordSetTrig, setAudioEngineChordSetTrig] = useState(0);
+  const [audioEngineDrumsSetTrig, setAudioEngineDrumsSetTrig] = useState(0);
+  const [drumsIsPlaying, setDrumsIsPlaying] = useState(false);
 
   const [audioModX, setAudioModX] = useState(0);
   const [audioModY, setAudioModY] = useState(0);
@@ -19,6 +20,8 @@ function App() {
   const [isTrackingMouse, setIsTrackingMouse] = useState(false);
 
   const analyserNodeRef = useRef();
+
+  const [bpm, setBpm] = useState();
 
   //Track mouse
   useEffect(() => {
@@ -61,17 +64,27 @@ function App() {
         {...{
           audioEngineIsPlaying,
           setAudioEngineIsIsPlaying,
-          setAudioEngineRndChordSetTrig,
+          setAudioEngineChordSetTrig,
+          audioEngineChordSetTrig,
+          setAudioEngineDrumsSetTrig,
+          audioEngineDrumsSetTrig,
+          drumsIsPlaying,
+          setDrumsIsPlaying,
+          bpm,
+          setBpm,
         }}
       />
       <Visualizer analyserNodeRef={analyserNodeRef} />
       <AudioEngine
-        rndChordSetTrig={audioEngineRndChordSetTrig}
+        rndChordSetTrig={audioEngineChordSetTrig}
+        audioEngineDrumsSetTrig={audioEngineDrumsSetTrig}
         initTrig={audioEngineInitTrig}
         isPlaying={audioEngineIsPlaying}
+        drumsIsPlaying={drumsIsPlaying}
         modX={audioModX}
         modY={audioModY}
         analyserNodeRef={analyserNodeRef}
+        bpm={bpm}
       />
 
       <div>
