@@ -288,9 +288,9 @@ function createAudioEngine(numOscillators = 5) {
     },
 
     setFilterFreqFromNormalizedValue(v, rampTime = 0.1) {
-      const min = 400;
+      const min = 800;
       const middle = 1000;
-      const max = 10000;
+      const max = 12000;
 
       const freq = curvefit3(v, min, middle, max);
 
