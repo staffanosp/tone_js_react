@@ -31,11 +31,11 @@ void main(void) {
     float pattern = (0.5 + bass * 0.1) / abs(sin(time - uv.y - uv.x - bass * 0.1));
 
     float hue = time * 0.005 + 0.4;
-    hue += bass * 0.005;
-    hue += sin(modPos.x * modPos.y);
+    hue += bass * 0.3;
+   hue += sin(modPos.x * modPos.y) * 0.2;
 
-    vec3 hsv1 = vec3(hue, 0.9, 0.85);
-    vec3 hsv2 = vec3(hue + 0.07, 0.85, 0.75);
+    vec3 hsv1 = vec3(hue * mids, 0.9, 0.85);
+    vec3 hsv2 = vec3(hue + mids, 0.85, 0.75);
 
     vec3 rgb1 = hsv2rgb(hsv1);
     vec3 rgb2 = hsv2rgb(hsv2);
