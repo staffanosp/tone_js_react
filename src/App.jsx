@@ -10,8 +10,8 @@ function App() {
 
   const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
   const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(false);
-  const [audioEngineChordSetTrig, setAudioEngineChordSetTrig] = useState(0);
-  const [audioEngineDrumsSetTrig, setAudioEngineDrumsSetTrig] = useState(0);
+  const [audioEngineChordSetIndex, setAudioEngineChordSetIndex] = useState(0);
+  const [audioEngineDrumsSetIndex, setAudioEngineDrumsSetIndex] = useState(0);
   const [drumsIsPlaying, setDrumsIsPlaying] = useState(false);
 
   const [audioModX, setAudioModX] = useState(0);
@@ -62,8 +62,8 @@ function App() {
     <>
       <Visualizer analyserNodeRef={analyserNodeRef} />
       <AudioEngine
-        rndChordSetTrig={audioEngineChordSetTrig}
-        audioEngineDrumsSetTrig={audioEngineDrumsSetTrig}
+        audioEngineChordSetIndex={audioEngineChordSetIndex}
+        audioEngineDrumsSetIndex={audioEngineDrumsSetIndex}
         initTrig={audioEngineInitTrig}
         isPlaying={audioEngineIsPlaying}
         drumsIsPlaying={drumsIsPlaying}
@@ -86,10 +86,10 @@ function App() {
         {...{
           audioEngineIsPlaying,
           setAudioEngineIsIsPlaying,
-          setAudioEngineChordSetTrig,
-          audioEngineChordSetTrig,
-          setAudioEngineDrumsSetTrig,
-          audioEngineDrumsSetTrig,
+          setAudioEngineChordSetIndex,
+          audioEngineChordSetIndex,
+          setAudioEngineDrumsSetIndex,
+          audioEngineDrumsSetIndex,
           drumsIsPlaying,
           setDrumsIsPlaying,
           bpm,

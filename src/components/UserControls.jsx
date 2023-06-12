@@ -5,15 +5,14 @@ import { patterns } from "../audio/drums";
 function UserControls({
   audioEngineIsPlaying,
   setAudioEngineIsIsPlaying,
-  setAudioEngineChordSetTrig,
-  audioEngineChordSetTrig,
-  setAudioEngineDrumsSetTrig,
-  audioEngineDrumsSetTrig,
+  setAudioEngineChordSetIndex,
+  audioEngineChordSetIndex,
+  setAudioEngineDrumsSetIndex,
+  audioEngineDrumsSetIndex,
   drumsIsPlaying,
   setDrumsIsPlaying,
   setBpm,
 }) {
-  console.log(audioEngineDrumsSetTrig);
   return (
     <div className="center">
       <div className="userControlContainer">
@@ -41,11 +40,11 @@ function UserControls({
         </div>
         <div className="btnSetContainer">
           <div>Chords</div>
-          <div>Chord Set: {audioEngineChordSetTrig + 1}</div>
+          <div>Chord Set: {audioEngineChordSetIndex + 1}</div>
           <div className="btnContainer">
             <button
               onClick={() => {
-                setAudioEngineChordSetTrig(
+                setAudioEngineChordSetIndex(
                   (old) => (old - 1 + chordSets.length) % chordSets.length
                 );
               }}
@@ -54,7 +53,7 @@ function UserControls({
             </button>
             <button
               onClick={() => {
-                setAudioEngineChordSetTrig(
+                setAudioEngineChordSetIndex(
                   (old) => (old + 1) % chordSets.length
                 );
               }}
@@ -73,11 +72,11 @@ function UserControls({
             {!drumsIsPlaying ? "PLAY" : "PAUSE"}
           </button>
 
-          <div>Pattern: {audioEngineDrumsSetTrig + 1}</div>
+          <div>Pattern: {audioEngineDrumsSetIndex + 1}</div>
           <div className="btnContainer">
             <button
               onClick={() => {
-                setAudioEngineDrumsSetTrig(
+                setAudioEngineDrumsSetIndex(
                   (old) => (old - 1 + patterns.length) % patterns.length
                 );
               }}
@@ -86,7 +85,7 @@ function UserControls({
             </button>
             <button
               onClick={() => {
-                setAudioEngineDrumsSetTrig(
+                setAudioEngineDrumsSetIndex(
                   (old) => (old + 1) % patterns.length
                 );
               }}
