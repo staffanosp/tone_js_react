@@ -8,93 +8,89 @@ import PoseNet from "./components/PoseNet";
 import "./App.css";
 
 function App() {
-	const [showStartScreen, setShowStartScreen] = useState(true);
+  const [showStartScreen, setShowStartScreen] = useState(true);
 
-	//user controls
-	const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
-	const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(false);
-	const [audioEngineRndChordSetTrig, setAudioEngineRndChordSetTrig] = useState(0);
-	const [isTrackingPose, setIsTrackingPose] = useState(false);
+  //user controls
+  const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
+  const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(true);
+  const [audioEngineRndChordSetTrig, setAudioEngineRndChordSetTrig] =
+    useState(0);
 
-	const [audioModX, setAudioModX] = useState(0);
-	const [audioModY, setAudioModY] = useState(0);
+  const [isTrackingPose, setIsTrackingPose] = useState(false);
+  const [isTrackingMouse, setIsTrackingMouse] = useState(); //will be set in an useEffect based on isTrackingPose
 
-	const [isTrackingMouse, setIsTrackingMouse] = useState(false);
+  const [audioModX, setAudioModX] = useState(0);
+  const [audioModY, setAudioModY] = useState(0);
 
-	const analyserNodeRef = useRef();
+  const analyserNodeRef = useRef();
 
-	//Track mouse
-	useEffect(() => {
-		const _listener = (e) => {
-			setAudioModX(e.clientX / window.innerWidth);
-			setAudioModY(1 - e.clientY / window.innerHeight);
-		};
+  //Mouse Tracking listeners
+  useEffect(() => {
+    const _listener = (e) => {
+      setAudioModX(e.clientX / window.innerWidth);
+      setAudioModY(1 - e.clientY / window.innerHeight);
+    };
 
-		if (isTrackingMouse) {
-			addEventListener("mousemove", _listener);
-		} else {
-			removeEventListener("mousemove", _listener);
-		}
+    if (isTrackingMouse) {
+      addEventListener("mousemove", _listener);
+    } else {
+      removeEventListener("mousemove", _listener);
+    }
 
-		return () => {
-			removeEventListener("mousemove", _listener);
-		}; //cleanup
-	}, [isTrackingMouse]);
+    return () => {
+      removeEventListener("mousemove", _listener);
+    }; //cleanup
+  }, [isTrackingMouse]);
 
-	const handleClickStart = () => {
-		setAudioEngineInitTrig((old) => ++old); //Initializes/starts the audio after user interaction
+  //Fallback to mouse tracking when webcam is disabled
+  useEffect(() => {
+    setIsTrackingMouse(!isTrackingPose);
+  }, [isTrackingPose]);
 
-		setShowStartScreen(false);
-	};
+  const handleClickStart = () => {
+    setAudioEngineInitTrig((old) => ++old); //Initializes/starts the audio after user interaction
 
-	//The start screen
-	if (showStartScreen) {
-		return (
-			<>
-				<div>WELCOME.. BLAH BLAAH BLAAAH</div>
-				<button onClick={handleClickStart}>Start</button>
-			</>
-		);
-	}
+    setShowStartScreen(false);
+  };
 
-	//The actual app
-	return (
-		<>
-			<PoseNet
-				isTrackingPose={isTrackingPose}
-				setModX={setAudioModX}
-				setModY={setAudioModY}
-			/>
-			<UserControls
-				{...{
-					audioEngineIsPlaying,
-					setAudioEngineIsIsPlaying,
-					setAudioEngineRndChordSetTrig,
-					isTrackingPose,
-					setIsTrackingPose,
-				}}
-			/>
-			<Visualizer analyserNodeRef={analyserNodeRef} />
-			<AudioEngine
-				rndChordSetTrig={audioEngineRndChordSetTrig}
-				initTrig={audioEngineInitTrig}
-				isPlaying={audioEngineIsPlaying}
-				modX={audioModX}
-				modY={audioModY}
-				analyserNodeRef={analyserNodeRef}
-			/>
+  //The start screen
+  if (showStartScreen) {
+    return (
+      <>
+        <div>WELCOME.. BLAH BLAAH BLAAAH</div>
+        <button onClick={handleClickStart}>Start</button>
+      </>
+    );
+  }
 
-			<div>
-				<button
-					onClick={() => {
-						setIsTrackingMouse((old) => !old);
-					}}
-				>
-					{isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
-				</button>
-			</div>
-		</>
-	);
+  //The actual app
+  return (
+    <>
+      <PoseNet
+        isTrackingPose={isTrackingPose}
+        setModX={setAudioModX}
+        setModY={setAudioModY}
+      />
+      <UserControls
+        {...{
+          audioEngineIsPlaying,
+          setAudioEngineIsIsPlaying,
+          setAudioEngineRndChordSetTrig,
+          isTrackingPose,
+          setIsTrackingPose,
+        }}
+      />
+      <Visualizer analyserNodeRef={analyserNodeRef} />
+      <AudioEngine
+        rndChordSetTrig={audioEngineRndChordSetTrig}
+        initTrig={audioEngineInitTrig}
+        isPlaying={audioEngineIsPlaying}
+        modX={audioModX}
+        modY={audioModY}
+        analyserNodeRef={analyserNodeRef}
+      />
+    </>
+  );
 }
 
 export default App;
