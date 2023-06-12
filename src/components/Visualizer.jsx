@@ -16,6 +16,7 @@ import fragment from "./shaders/fragment.glsl";
 import fragment2 from "./shaders/fragment2.glsl";
 import fragment3 from "./shaders/fragment3.glsl";
 import fragment4 from "./shaders/fragment4.glsl";
+import liqFrag1 from "./shaders/liqFrag1.glsl";
 
 class Visualizer extends Component {
   constructor(props) {
@@ -24,7 +25,7 @@ class Visualizer extends Component {
     this.canvasRef = createRef();
     this.positionVector = new Vec2(props.modX, props.modY);
     this.analyserNodeRef = props.analyserNodeRef;
-    this.fragments = [fragment];
+    this.fragments = [liqFrag1, fragment];
     this.state = {
       fragment: 0,
     };
