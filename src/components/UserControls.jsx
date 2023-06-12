@@ -16,7 +16,6 @@ function UserControls({
   bpm,
   isTrackingPose,
   setIsTrackingPose,
-
 }) {
   return (
     <div className="center">
@@ -99,14 +98,14 @@ function UserControls({
             </button>
           </div>
         </div>
+        <button
+          onClick={() => {
+            setIsTrackingPose(!isTrackingPose);
+          }}
+        >
+          {isTrackingPose ? "POSE: Stop" : "POSE: Start"}
+        </button>
       </div>
-      <button
-        onClick={() => {
-          setIsTrackingPose(!isTrackingPose);
-        }}
-      >
-        {isTrackingPose ? "POSE: Stop" : "POSE: Start"}
-      </button>
     </div>
   );
 }

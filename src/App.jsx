@@ -13,7 +13,7 @@ function App() {
   //user controls
   const [audioEngineInitTrig, setAudioEngineInitTrig] = useState(0);
 
-  const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(false);
+  const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(true);
   const [audioEngineChordSetIndex, setAudioEngineChordSetIndex] = useState(0);
   const [audioEngineDrumsSetIndex, setAudioEngineDrumsSetIndex] = useState(0);
 
@@ -72,9 +72,6 @@ function App() {
   //The actual app
   return (
     <>
-      <Visualizer analyserNodeRef={analyserNodeRef} />
-
- 
       <Visualizer
         analyserNodeRef={analyserNodeRef}
         modX={audioModX}
@@ -93,16 +90,6 @@ function App() {
         bpm={bpm}
       />
 
-
-      <div>
-        <button
-          onClick={() => {
-            setIsTrackingMouse((old) => !old);
-          }}
-        >
-          {isTrackingMouse ? "Mouse: STOP" : "Mouse: START"}
-        </button>
-      </div>
       <UserControls
         {...{
           audioEngineIsPlaying,
@@ -115,13 +102,14 @@ function App() {
           setDrumsIsPlaying,
           bpm,
           setBpm,
+          setIsTrackingPose,
+          isTrackingPose,
         }}
-
+      />
       <PoseNet
         isTrackingPose={isTrackingPose}
         setModX={setAudioModX}
         setModY={setAudioModY}
-
       />
     </>
   );
