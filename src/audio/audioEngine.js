@@ -76,6 +76,7 @@ function createAudioEngine(numOscillators = 5) {
   const masterVolumeNode = new Tone.Volume(-Infinity);
 
   const analyserNode = new Tone.Analyser("fft");
+  analyserNode.size = 32;
   // analyserNode.smoothing = 0;
 
   //connections
@@ -133,7 +134,7 @@ function createAudioEngine(numOscillators = 5) {
     const currentPattern = patterns[currentDrumPattern];
     const beatIndex = Math.floor(time / sixteenthNote) % 16;
 
-    console.log(sixteenthNote);
+    // console.log(sixteenthNote);
 
     const kickStep = currentPattern.kickPattern[beatIndex];
     const snareStep = currentPattern.snarePattern[beatIndex];
@@ -239,7 +240,7 @@ function createAudioEngine(numOscillators = 5) {
     },
 
     setOscillatorGainsFromNormalizedValue(v, rampTime = 0.1) {
-      console.log("setOscillatorGainsFromNormalizedValue");
+      // console.log("setOscillatorGainsFromNormalizedValue");
 
       const gains = []; //this is just to be able to return the gains, mostly for debug purposes
 
@@ -288,7 +289,7 @@ function createAudioEngine(numOscillators = 5) {
 
       const rndDetuneRange = 10;
 
-      console.log("setChord");
+      // console.log("setChord");
 
       for (const [i, note] of chord.entries()) {
         if (i > this.numOscillators - 1) break;

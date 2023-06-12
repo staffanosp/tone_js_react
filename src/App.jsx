@@ -74,7 +74,11 @@ function App() {
           setBpm,
         }}
       />
-      <Visualizer analyserNodeRef={analyserNodeRef} />
+      <Visualizer
+        analyserNodeRef={analyserNodeRef}
+        modX={audioModX}
+        modY={audioModY}
+      />
       <AudioEngine
         rndChordSetTrig={audioEngineChordSetTrig}
         audioEngineDrumsSetTrig={audioEngineDrumsSetTrig}
