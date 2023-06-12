@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import * as mpPose from "@mediapipe/pose";
 import * as tf from "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
+import { motion as m } from "framer-motion";
 
 import styles from "../styles/posenet.module.css";
 
@@ -13,9 +14,15 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 	const posesRef = useRef(null);
 	const intervalRef = useRef(null);
 
-
 	//states
 	const [notEnoughData, setNotEnoughData] = useState(true);
+
+
+	//animations
+	const variants = {
+		tracking: { opacity: 1, y: "-100%" },
+		notTracking: { opacity: 0, y: "100%" },
+	  }
 
 	// create detector
 	useEffect(() => {
@@ -34,17 +41,16 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 
 	// create poses to get x-y value
 	const estimatePose = async () => {
-	if (detectorRef.current && webcamRef.current) {
-
+		if (detectorRef.current && webcamRef.current) {
 			const videoElm = webcamRef.current;
 			posesRef.current = await detectorRef.current.estimatePoses(videoElm);
-			
+
 			const { videoWidth, videoHeight } = videoElm;
 
-			console.log(videoWidth, videoHeight)
+			console.log(videoWidth, videoHeight);
 
 			let rightWrist = posesRef.current[0]?.["keypoints"][10];
-			let valueX = 1 - rightWrist.x / videoWidth
+			let valueX = 1 - rightWrist.x / videoWidth;
 			let valueY = 1 - rightWrist.y / videoHeight;
 			let roundedX = valueX.toFixed(3);
 			let roundedY = valueY.toFixed(3);
@@ -87,20 +93,18 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
 
 	return (
 		<>
-			<main className={styles.container}>
-					<video
-						className={`${styles.webcam} ${
-							isTrackingPose ? styles.active : styles.inactive
-						}`}
-						ref={webcamRef}
-						autoPlay
-					/>
-					<p>
-						{notEnoughData && isTrackingPose
-							? "can't get a good enough look on the pose, move back"
-							: ""}
-					</p>
-			</main>
+			<m.main className={styles.container} animate={isTrackingPose ? "tracking" : "notTracking"} variants={variants}>
+				<video
+					className={styles.webcam}
+					ref={webcamRef}
+					autoPlay
+				/>
+				<p>
+					{notEnoughData && isTrackingPose
+						? "can't get a good enough look on the pose, move back"
+						: ""}
+				</p>
+			</m.main>
 		</>
 	);
 }

@@ -1,6 +1,6 @@
 .container {
 	position: absolute;
-	bottom: 3rem;
+	bottom: -10rem;
 	right: -5rem;
   }
   
@@ -11,15 +11,5 @@
 	transform: rotateY(180deg);
 	-webkit-transform: rotateY(180deg); /* Safari and Chrome */
 	-moz-transform: rotateY(180deg);
-  }
-  
-
-.active {
-	opacity: 1;
-	/* Additional styles for the active state */
-  }
-  
-  .inactive {
-	opacity: 0;
-	/* Additional styles for the inactive state */
+	border-radius: 10px;
   }
