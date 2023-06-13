@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { bpmList } from "../audio/drums";
 import { chordSets } from "../audio/chords";
 import { patterns } from "../audio/drums";
@@ -12,11 +13,11 @@ function UserControls({
   drumsIsPlaying,
   setDrumsIsPlaying,
   setBpm,
-
-  bpm,
   isTrackingPose,
   setIsTrackingPose,
 }) {
+  const [selectedBpm, setSelectedBpm] = useState(1);
+
   return (
     <div className="center">
       <div className="userControlContainer">
@@ -33,9 +34,20 @@ function UserControls({
         <div className="btnSetContainer">
           <div>Tempo:</div>
           <div className="btnContainer">
-            {bpmList.map((item) => {
+            {bpmList.map((item, index) => {
               return (
-                <button key={item.id} onClick={() => setBpm(item.value)}>
+                <button
+                  className="bpmBtn"
+                  key={item.id}
+                  onClick={() => {
+                    setBpm(item.value);
+                    setSelectedBpm(index);
+                  }}
+                  style={{
+                    border: selectedBpm === index ? "1px solid black" : "none",
+                    fontWeight: 600,
+                  }}
+                >
                   {`${item.label} bpm`}
                 </button>
               );
@@ -44,7 +56,9 @@ function UserControls({
         </div>
         <div className="btnSetContainer">
           <div>Chords</div>
-          <div>Chord Set: {audioEngineChordSetIndex + 1}</div>
+          <div className="secondaryLabelText">
+            Set: {audioEngineChordSetIndex + 1}
+          </div>
           <div className="btnContainer">
             <button
               onClick={() => {
@@ -76,7 +90,9 @@ function UserControls({
             {!drumsIsPlaying ? "PLAY" : "PAUSE"}
           </button>
 
-          <div>Pattern: {audioEngineDrumsSetIndex + 1}</div>
+          <div className="secondaryLabelText">
+            Pattern: {audioEngineDrumsSetIndex + 1}
+          </div>
           <div className="btnContainer">
             <button
               onClick={() => {
@@ -98,13 +114,16 @@ function UserControls({
             </button>
           </div>
         </div>
-        <button
-          onClick={() => {
-            setIsTrackingPose(!isTrackingPose);
-          }}
-        >
-          {isTrackingPose ? "POSE: Stop" : "POSE: Start"}
-        </button>
+        <div className="btnSetContainer">
+          <div>Cam</div>
+          <button
+            onClick={() => {
+              setIsTrackingPose(!isTrackingPose);
+            }}
+          >
+            {isTrackingPose ? "Stop" : "Start"}
+          </button>
+        </div>
       </div>
     </div>
   );

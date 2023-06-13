@@ -5,16 +5,46 @@
   text-align: center;
 }
 
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.5em 1rem;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
 body {
   max-height: 100vh;
   overflow: hidden;
 }
+
+.startScrenContainer {
+  padding: 5rem;
+  color: rgb(0, 255, 47);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-weight: 800;
+  font-size: 2.5rem;
 }
 
 .center {
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.enterBtn {
+  border-radius: 30%;
+  margin-top: 1rem;
+  transition: all ease 0.15s;
+  background-color: transparent;
+  color: rgb(0, 255, 47);
 }
 
 .userControlContainer {
@@ -26,7 +56,7 @@ body {
   justify-content: left;
   align-items: center;
   flex-wrap: wrap;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   border-radius: 0 0 1rem 1rem;
 }
 
@@ -57,6 +87,10 @@ body {
 
 .btnContainer {
   margin: 0.25rem;
+}
+
+.secondaryLabelText {
+  font-weight: 400;
 }
 
 .card {

@@ -63,8 +63,17 @@ function App() {
   if (showStartScreen) {
     return (
       <>
-        <div>WELCOME.. BLAH BLAAH BLAAAH</div>
-        <button onClick={handleClickStart}>Start</button>
+        <div className="startScrenContainer">
+          <Visualizer
+            analyserNodeRef={analyserNodeRef}
+            modX={audioModX}
+            modY={audioModY}
+          />
+          <div>STEP INTO A WORLD OF SOUND AND MOVMENT</div>
+          <button className="enterBtn" onClick={handleClickStart}>
+            ENTER
+          </button>
+        </div>
       </>
     );
   }
