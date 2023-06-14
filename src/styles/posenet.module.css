@@ -6,6 +6,8 @@
 }
 
 .cameraContainer {
+  overflow: hidden;
+  border-radius: 16px;
   position: relative;
 }
 
@@ -15,7 +17,6 @@
   transform: rotateY(180deg);
   -webkit-transform: rotateY(180deg); /* Safari and Chrome */
   -moz-transform: rotateY(180deg);
-  border-radius: 10px;
 }
 
 .gridContainer {
