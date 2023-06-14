@@ -226,13 +226,11 @@ function createAudioEngine(numOscillators = 5) {
     },
 
     startLoop() {
-      if (!loopIsStarted) {
-        loop.start(0);
-        loopIsStarted = !loopIsStarted;
-      } else if (loopIsStarted) {
-        loop.stop();
-        loopIsStarted = !loopIsStarted;
-      }
+      loop.start(0);
+    },
+
+    stopLoop() {
+      loop.stop(0);
     },
 
     setBpmValue(value) {

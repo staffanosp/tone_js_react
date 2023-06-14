@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import * as Tone from "tone";
 import { createAudioEngine } from "../audio/audioEngine";
 import { getChord, getMaxVoices, changeChordSet } from "../audio/chords";
 
@@ -84,8 +83,13 @@ function AudioEngine({
     }
   }, [modX, modY]);
 
+  //Start stop drums
   useEffect(() => {
-    audioEngineRef.current.startLoop();
+    if (drumsIsPlaying) {
+      audioEngineRef.current.startLoop();
+    } else {
+      audioEngineRef.current.stopLoop();
+    }
   }, [drumsIsPlaying]);
 
   useEffect(() => {
