@@ -16,6 +16,12 @@ function App() {
   const [audioEngineIsPlaying, setAudioEngineIsIsPlaying] = useState(true);
   const [audioEngineChordSetIndex, setAudioEngineChordSetIndex] = useState(0);
   const [audioEngineDrumsSetIndex, setAudioEngineDrumsSetIndex] = useState(0);
+  const [
+    audioEngineCurrentChordSetLength,
+    setAudioEngineCurrentChordSetLength,
+  ] = useState(0);
+  const [audioEngineCurrentChordIndex, setAudioEngineCurrentChordIndex] =
+    useState(2);
 
   const [drumsIsPlaying, setDrumsIsPlaying] = useState(false);
 
@@ -97,6 +103,8 @@ function App() {
         modY={audioModY}
         analyserNodeRef={analyserNodeRef}
         bpm={bpm}
+        setCurrentChordSetLength={setAudioEngineCurrentChordSetLength}
+        setCurrentChordIndex={setAudioEngineCurrentChordIndex}
       />
 
       <div className="overlay-container">
@@ -104,6 +112,9 @@ function App() {
           isTrackingPose={isTrackingPose}
           setModX={setAudioModX}
           setModY={setAudioModY}
+          modY={audioModY}
+          gridCols={audioEngineCurrentChordSetLength}
+          gridSelectedCol={audioEngineCurrentChordIndex}
         />
 
         <UserControls

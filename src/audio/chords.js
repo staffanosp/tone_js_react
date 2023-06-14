@@ -49,6 +49,7 @@ const changeChordSet = (i) => {
   chords = chordSets[i];
   console.log(chords);
 };
+const getChordSetLength = () => chords.length;
 
 const normalizedToIndex = (v, length) => {
   if (v === 1) return length - 1;
@@ -57,6 +58,8 @@ const normalizedToIndex = (v, length) => {
 };
 
 const getChord = (v) => chords[normalizedToIndex(v, chords.length)];
+
+const getChordIndex = (v) => normalizedToIndex(v, chords.length);
 
 const getMinVoices = () =>
   Math.min(...chordSets.flat().map((chord) => chord.length));
@@ -71,4 +74,6 @@ export {
   changeChordSet,
   chords,
   chordSets,
+  getChordSetLength,
+  getChordIndex,
 };

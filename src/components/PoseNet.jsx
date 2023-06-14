@@ -24,7 +24,14 @@ function createFrameAverage(nFrames) {
   };
 }
 
-function PoseNet({ setModX, setModY, isTrackingPose }) {
+function PoseNet({
+  setModX,
+  setModY,
+  modY,
+  isTrackingPose,
+  gridCols,
+  gridSelectedCol,
+}) {
   //refs
   const webcamRef = useRef(null);
   const detectorRef = useRef(null);
@@ -128,7 +135,19 @@ function PoseNet({ setModX, setModY, isTrackingPose }) {
         animate={isTrackingPose ? "tracking" : "notTracking"}
         variants={variants}
       >
-        <video className={styles.webcam} ref={webcamRef} autoPlay />
+        <div className={styles.cameraContainer}>
+          <video className={styles.webcam} ref={webcamRef} autoPlay />
+          <div className={styles.gridContainer}>
+            {[...Array(gridCols)].map((_, i) => (
+              <div
+                className={`${styles.gridItem} ${
+                  i === gridSelectedCol ? styles.gridItemSelected : ""
+                }`}
+              ></div>
+            ))}
+          </div>
+        </div>
+
         {notEnoughData && isTrackingPose ? (
           <p className={styles.statusText}>
             can't get a good enough look on the pose, move back

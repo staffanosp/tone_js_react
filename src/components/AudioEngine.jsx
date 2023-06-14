@@ -1,6 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { createAudioEngine } from "../audio/audioEngine";
-import { getChord, getMaxVoices, changeChordSet } from "../audio/chords";
+import {
+  getChord,
+  getMaxVoices,
+  changeChordSet,
+  getChordSetLength,
+  getChordIndex,
+} from "../audio/chords";
 
 function AudioEngine({
   initTrig,
@@ -12,9 +18,10 @@ function AudioEngine({
   audioEngineDrumsSetIndex,
   drumsIsPlaying,
   bpm,
+  setCurrentChordIndex,
+  setCurrentChordSetLength,
 }) {
   const [oscGains, setOscGains] = useState([]);
-
   const audioEngineRef = useRef();
 
   let isDebug = false;
@@ -61,7 +68,11 @@ function AudioEngine({
 
   useEffect(() => {
     changeChordSet(audioEngineChordSetIndex);
+
+    setCurrentChordSetLength(getChordSetLength());
+
     audioEngineRef.current.setChord(getChord(modX), 0.2);
+    setCurrentChordIndex(getChordIndex(modX));
   }, [audioEngineChordSetIndex]);
 
   useEffect(() => {
@@ -73,6 +84,8 @@ function AudioEngine({
     if (audioEngineRef.current) {
       //chord
       audioEngineRef.current.setChord(getChord(modX), 0.1);
+      setCurrentChordIndex(getChordIndex(modX));
+
       //set gains and catch in oscGains state
       setOscGains(
         audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY)
