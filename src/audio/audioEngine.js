@@ -52,9 +52,9 @@ function createAudioEngine(numOscillators = 5) {
   // create other nodes
   const oscillatorsSumGainNode = new Tone.Gain(1);
 
-  const preDelayGainNode = new Tone.Gain(1);
+  const preDelayGainNode = new Tone.Gain(0.5);
   const preDelayFilterNode = new Tone.Filter(400, "highpass");
-  const delayNode = new Tone.PingPongDelay("8n.", 0.4);
+  const delayNode = new Tone.PingPongDelay("8n.", 0.3);
 
   const filterNode = new Tone.Filter(10000, "lowpass");
   filterNode.Q.value = 1;

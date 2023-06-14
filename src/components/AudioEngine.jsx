@@ -73,7 +73,7 @@ function AudioEngine({
   useEffect(() => {
     if (audioEngineRef.current) {
       //chord
-      audioEngineRef.current.setChord(getChord(modX), 0.2);
+      audioEngineRef.current.setChord(getChord(modX), 0.1);
       //set gains and catch in oscGains state
       setOscGains(
         audioEngineRef.current.setOscillatorGainsFromNormalizedValue(modY)
