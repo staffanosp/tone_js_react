@@ -99,27 +99,31 @@ function App() {
         bpm={bpm}
       />
 
-      <UserControls
-        {...{
-          audioEngineIsPlaying,
-          setAudioEngineIsIsPlaying,
-          setAudioEngineChordSetIndex,
-          audioEngineChordSetIndex,
-          setAudioEngineDrumsSetIndex,
-          audioEngineDrumsSetIndex,
-          drumsIsPlaying,
-          setDrumsIsPlaying,
-          bpm,
-          setBpm,
-          setIsTrackingPose,
-          isTrackingPose,
-        }}
-      />
-      <PoseNet
-        isTrackingPose={isTrackingPose}
-        setModX={setAudioModX}
-        setModY={setAudioModY}
-      />
+      <div className="overlay-container">
+        <PoseNet
+          isTrackingPose={isTrackingPose}
+          setModX={setAudioModX}
+          setModY={setAudioModY}
+        />
+
+        <UserControls
+          {...{
+            audioEngineIsPlaying,
+            setAudioEngineIsIsPlaying,
+            setAudioEngineChordSetIndex,
+            audioEngineChordSetIndex,
+            setAudioEngineDrumsSetIndex,
+            audioEngineDrumsSetIndex,
+            drumsIsPlaying,
+            setDrumsIsPlaying,
+            bpm,
+            setBpm,
+            setIsTrackingPose,
+
+            isTrackingPose,
+          }}
+        />
+      </div>
     </>
   );
 }
