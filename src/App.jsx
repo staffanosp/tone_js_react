@@ -69,7 +69,7 @@ function App() {
             modX={audioModX}
             modY={audioModY}
           />
-          <div>STEP INTO A WORLD OF SOUND AND MOVMENT</div>
+          <div>STEP INTO A WORLD OF SOUND AND MOVEMENT</div>
           <button className="enterBtn" onClick={handleClickStart}>
             ENTER
           </button>
