@@ -15,6 +15,7 @@ function UserControls({
   setBpm,
   isTrackingPose,
   setIsTrackingPose,
+  disableCamera,
 }) {
   const [selectedBpm, setSelectedBpm] = useState(1);
 
@@ -111,16 +112,19 @@ function UserControls({
           </button>
         </div>
       </div>
-      <div className="btnSetContainer">
-        <div>Cam</div>
-        <button
-          onClick={() => {
-            setIsTrackingPose(!isTrackingPose);
-          }}
-        >
-          {isTrackingPose ? "Stop" : "Start"}
-        </button>
-      </div>
+
+      {!disableCamera && (
+        <div className="btnSetContainer">
+          <div>Cam</div>
+          <button
+            onClick={() => {
+              setIsTrackingPose(!isTrackingPose);
+            }}
+          >
+            {isTrackingPose ? "Stop" : "Start"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

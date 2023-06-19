@@ -7,6 +7,12 @@ import PoseNet from "./components/PoseNet";
 
 import "./App.css";
 
+//debug params stuff
+const params = new URLSearchParams(window.location.search);
+const disableCamera = !!params.get("camera");
+
+console.log({ disableCamera });
+
 function App() {
   const [showStartScreen, setShowStartScreen] = useState(true);
 
@@ -108,14 +114,16 @@ function App() {
       />
 
       <div className="overlay-container">
-        <PoseNet
-          isTrackingPose={isTrackingPose}
-          setModX={setAudioModX}
-          setModY={setAudioModY}
-          modY={audioModY}
-          gridCols={audioEngineCurrentChordSetLength}
-          gridSelectedCol={audioEngineCurrentChordIndex}
-        />
+        {!disableCamera && (
+          <PoseNet
+            isTrackingPose={isTrackingPose}
+            setModX={setAudioModX}
+            setModY={setAudioModY}
+            modY={audioModY}
+            gridCols={audioEngineCurrentChordSetLength}
+            gridSelectedCol={audioEngineCurrentChordIndex}
+          />
+        )}
 
         <UserControls
           {...{
@@ -132,6 +140,7 @@ function App() {
             setIsTrackingPose,
 
             isTrackingPose,
+            disableCamera,
           }}
         />
       </div>
